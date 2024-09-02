@@ -1,57 +1,28 @@
 #pragma once
 
-#include "GlobalContext.h"
+#include "GlobalContext/GlobalContext.h"
 #include "Hooks/PeepEventsHook.h"
-#include "Platform/Macros/CallStack.h"
+#include "Utils/ReturnAddress.h"
 
-[[nodiscard]] inline auto& features() noexcept
+extern "C"
 {
-    return *GlobalContext::instance().features;
-}
 
-[[nodiscard]] inline auto& hudFeatures() noexcept
+sdl3::SDL_PeepEvents* SDLHook_PeepEvents_cpp() noexcept
 {
-    return features().hudFeatures;
-}
-
-[[nodiscard]] inline auto& visuals() noexcept
-{
-    return features().visuals;
-}
-
-inline int PeepEventsHook::SDL_PeepEvents(void* events, int numevents,
-    int action,
-    unsigned minType, unsigned maxType) noexcept
-{
-    GlobalContext::instance().initializeFromGameThread();
-
-    hudFeatures().bombTimer.run(GlobalContext::instance().featureHelpers->getBombTimerHelpers());
-    hudFeatures().defusingAlert.run(GlobalContext::instance().featureHelpers->getDefusingAlertHelpers());
-    hudFeatures().killfeedPreserver.run(GlobalContext::instance().featureHelpers->getKillfeedPreserverHelpers());
-
-    GlobalContext::instance().panoramaGUI->run(features(), GlobalContext::instance().unloadFlag);
-    GlobalContext::instance().hooks->loopModeGameHook.update();
-    GlobalContext::instance().hooks->viewRenderHook.update();
-    visuals().scopeOverlayRemover.updatePanelVisibility(GlobalContext::instance().featureHelpers->hudProvider);
-
-    if (GlobalContext::instance().unloadFlag) {
-        const auto originalPeepEvents = GlobalContext::instance().peepEventsHook.original;
-        GlobalContext::instance().peepEventsHook.disable();
-        GlobalContext::instance().hooks->loopModeGameHook.forceUninstall();
-        GlobalContext::instance().hooks->viewRenderHook.forceUninstall();
+    const auto [original, shouldUnload] {GlobalContext::instance().peepEventsHook()};
+    if (shouldUnload)
         GlobalContext::destroyInstance();
-        return originalPeepEvents(events, numevents, action, minType, maxType);
-    }
-    return GlobalContext::instance().peepEventsHook.original(events, numevents, action, minType, maxType);
+    return original;
 }
 
-inline void* LoopModeGameHook::getWorldSession(cs2::CLoopModeGame* thisptr) noexcept
+cs2::CLoopModeGame::getWorldSession LoopModeGameHook_getWorldSession_cpp(const void* returnAddress) noexcept
 {
-    visuals().scopeOverlayRemover.getWorldSessionHook(RETURN_ADDRESS());
-    return GlobalContext::instance().hooks->loopModeGameHook.originalGetWorldSession(thisptr);
+    return GlobalContext::instance().fullContext().getWorldSessionHook(ReturnAddress{returnAddress});
 }
 
-inline void ViewRenderHook::onRenderStart(cs2::CViewRender* thisptr) noexcept
+void ViewRenderHook_onRenderStart_cpp(cs2::CViewRender* thisptr) noexcept
 {
-    GlobalContext::instance().onRenderStart(thisptr);
+    GlobalContext::instance().fullContext().onRenderStart(thisptr);
+}
+
 }

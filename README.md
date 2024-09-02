@@ -3,15 +3,21 @@
 ![Windows](https://github.com/danielkrupinski/Osiris/workflows/Windows/badge.svg?branch=master&event=push)
 ![Linux](https://github.com/danielkrupinski/Osiris/workflows/Linux/badge.svg?branch=master&event=push)
 
-Free and open-source game hack for **Counter-Strike 2**. Compatible with the latest Steam version of the game. Cross-platform - available for Windows and Linux systems.
+Cross-platform (Windows, Linux) game hack for **Counter-Strike 2** with GUI and rendering based on game's Panorama UI. Compatible with the latest game update on Steam.
 
 ## What's new
 
-* 23 November 2023 - **Visualize Bomb Defuse** function was added to **Sound**
-* 16 November 2023 - **Visualize Bomb Beep** function was added to **Sound**
-* 8 November 2023 - Adjusted positions of sound visualizations to be closer to the sound source
-* 1 November 2023 - **Visualize Bomb Plant** function was added to **Sound**
-* 27 October 2023 - **Visualize Player Footsteps** function was added to **Sound**
+* 2 September 2024
+    * Player outline glow now includes weapons carried by the player
+
+* 31 August 2024
+    * Added player outline glow feature
+
+    ![Player outline glow](https://github.com/user-attachments/assets/667d1f58-bc3b-490b-b2d0-c0b9acd517b0)
+
+* 17 August 2024 - new HUD feature: "Post-round timer"
+
+![Post-round timer](https://github.com/user-attachments/assets/3ec7261b-e119-4972-b9bf-f85ac5646110)
 
 ## Technical features
 
@@ -73,6 +79,6 @@ However, this injection method might be detected by VAC as gdb is visible under 
 
 ## License
 
-> Copyright (c) 2018-2023 Daniel Krupiński
+> Copyright (c) 2018-2024 Daniel Krupiński
 
 This project is licensed under the [MIT License](https://opensource.org/licenses/mit-license.php) - see the [LICENSE](https://github.com/danielkrupinski/Osiris/blob/master/LICENSE) file for details.

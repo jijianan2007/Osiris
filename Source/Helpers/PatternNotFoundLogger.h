@@ -5,7 +5,7 @@
 #include <Platform/SimpleMessageBox.h>
 
 struct PatternNotFoundLogger {
-    void operator()(BytePattern pattern, [[maybe_unused]] std::span<const std::byte> bytes) const
+    static void onPatternNotFound(BytePattern pattern) noexcept
     {
         StringBuilderStorage<500> storage;
         auto builder = storage.builder();
@@ -15,16 +15,16 @@ struct PatternNotFoundLogger {
         builder.put("Failed to find pattern ");
 
         bool printedFirst = false;
-        for (const auto byte : pattern.get()) {
+        const auto wildcardChar{pattern.getWildcardChar()};
+        for (const auto byte : pattern.raw()) {
             if (printedFirst)
                 builder.put(' ');
-
-            if (byte != BytePattern::wildcardChar) {
+            if (byte != wildcardChar) {
                 if ((byte & 0xF0) == 0)
                     builder.put('0');
                 builder.putHex(static_cast<unsigned char>(byte));
             } else {
-                builder.put(BytePattern::wildcardChar);
+                builder.put(byte);
             }
 
             printedFirst = true;
@@ -32,9 +32,6 @@ struct PatternNotFoundLogger {
 
         builder.put('\n');
 
-        messageBox.showError("Osiris", builder.cstring());
+        SimpleMessageBox{}.showWarning("Osiris", builder.cstring());
     }
-
-private:
-    SimpleMessageBox messageBox;
 };

@@ -1,25 +1,32 @@
 #pragma once
 
-#include <CS2/Classes/Panorama.h>
-#include <Features/Visuals/ScopeOverlayRemover/ScopeOverlayRemover.h>
-#include <MemoryPatterns/ClientPatterns.h>
-#include <string_view>
+#include <GameClasses/PanoramaUiEngine.h>
 #include <Utils/StringParser.h>
 #include <Helpers/UnloadFlag.h>
-#include <FeatureHelpers/TogglableFeature.h>
+#include <FeatureHelpers/FeatureToggle.h>
 
 #include "PanoramaCommandDispatcher.h"
 
+template <typename HookContext>
 class PanoramaGUI {
 public:
-    PanoramaGUI() noexcept
+    explicit PanoramaGUI(HookContext& hookContext) noexcept
+        : hookContext{hookContext}
     {
-        const PanoramaUiPanel mainMenu{ ClientPatterns::mainMenuPanel()->uiPanel};
-        PanoramaUiEngine::runScript(mainMenu, "if (!$('#JsSettings')) MainMenu.PreloadSettings();", "", 0);
+    }
+
+    void init(auto&& mainMenu) noexcept
+    {
+        if (!mainMenu)
+            return;
+
+        // ensure settings tab is loaded because we use CSS classes from settings
+        // TODO: replace use of settings CSS classes with raw style properties
+        PanoramaUiEngine::runScript(mainMenu, "if (!$('#JsSettings')) MainMenu.NavigateToTab('JsSettings', 'settings/settings');", "", 0);
 
         const auto settings = mainMenu.findChildInLayoutFile("JsSettings");
         if (settings)
-            settingsPanelPtr = settings;
+            state().settingsPanelHandle = settings.getHandle();
 
         PanoramaUiEngine::runScript(settings, reinterpret_cast<const char*>(
 #include "CreateGUI.js"
@@ -39,42 +46,35 @@ public:
     class: "mainmenu-top-navbar__radio-btn__icon",
     src: "s2r://panorama/images/icons/ui/bug.vsvg"
   });
+
+  $.DispatchEvent('Activated', $.GetContextPanel().FindChildTraverse("MainMenuNavBarHome"), 'mouse');
 })();
 )", "", 0);
 
         if (const auto guiButtonPanel = mainMenu.findChildInLayoutFile("OsirisOpenMenuButton"))
-            guiButtonPointer = guiButtonPanel;
+            state().guiButtonHandle = guiButtonPanel.getHandle();
 
         if (const auto guiPanel = mainMenu.findChildInLayoutFile("OsirisMenuTab"))
-            guiPanelPointer = guiPanel;
+            state().guiPanelHandle = guiPanel.getHandle();
     }
 
-    ~PanoramaGUI() noexcept
+    void run(Features features, UnloadFlag& unloadFlag) const noexcept
     {
-        if (guiButtonPointer.getHandle().isValid())
-            PanoramaUiEngine::onDeletePanel(guiButtonPointer.getHandle());
-
-        if (guiPanelPointer.getHandle().isValid())
-            PanoramaUiEngine::onDeletePanel(guiPanelPointer.getHandle());
-
-        if (const auto settingsPanel = settingsPanelPtr.get())
-            PanoramaUiEngine::runScript(settingsPanel, "delete $.Osiris", "", 0);
-    }
-
-    void run(Features& features, UnloadFlag& unloadFlag) const noexcept
-    {
-        const auto guiPanel = guiPanelPointer.get();
+        auto&& guiPanel = hookContext.panels().getPanelFromHandle(state().guiPanelHandle);
         if (!guiPanel)
             return;
 
         const auto cmdSymbol = PanoramaUiEngine::makeSymbol(0, "cmd");
         const auto cmd = guiPanel.getAttributeString(cmdSymbol, "");
-        PanoramaCommandDispatcher{ cmd, features, unloadFlag }();
+        PanoramaCommandDispatcher{cmd, features, unloadFlag}();
         guiPanel.setAttributeString(cmdSymbol, "");
     }
 
 private:
-    PanoramaPanelPointer guiPanelPointer;
-    PanoramaPanelPointer guiButtonPointer;
-    PanoramaPanelPointer settingsPanelPtr;
+    [[nodiscard]] auto& state() const noexcept
+    {
+        return hookContext.panoramaGuiState();
+    }
+
+    HookContext& hookContext;
 };

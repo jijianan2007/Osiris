@@ -1,21 +1,46 @@
 #pragma once
 
-#include <cstddef>
+#include <optional>
 
-#include <CS2/Classes/C_CSGameRules.h>
-#include "Implementation/GameRulesImpl.h"
+#include <GameDependencies/GameRulesDeps.h>
 
+template <typename HookContext>
 struct GameRules {
-    explicit GameRules(cs2::C_CSGameRules* thisptr) noexcept
-        : thisptr{ thisptr }
+    GameRules(HookContext& hookContext, cs2::C_CSGameRules* gameRules) noexcept
+        : hookContext{hookContext}
+        , gameRules{gameRules}
     {
     }
 
-    [[nodiscard]] float getRoundStartTime() const noexcept
+    [[nodiscard]] std::optional<float> roundStartTime() const noexcept
     {
-        return GameRulesImpl::instance().roundStartTimeOffset.of(thisptr).valueOr(0.0f);
+        if (gameRules && GameRulesDeps::instance().roundStartTimeOffset)
+            return *GameRulesDeps::instance().roundStartTimeOffset.of(gameRules).get();
+        return {};
     }
 
-private:
-    cs2::C_CSGameRules* thisptr;
+    [[nodiscard]] std::optional<float> roundRestartTime() const noexcept
+    {
+        if (gameRules && GameRulesDeps::instance().offsetToRoundRestartTime)
+            return *GameRulesDeps::instance().offsetToRoundRestartTime.of(gameRules).get();
+        return {};
+    }
+
+    [[nodiscard]] bool hasScheduledRoundRestart() const noexcept
+    {
+        return roundRestartTime() > 0.0f;
+    }
+
+    [[nodiscard]] std::optional<float> timeToRoundRestart() const noexcept
+    {
+        const auto _roundRestartTime = roundRestartTime();
+        const auto _curtime = hookContext.globalVars().curtime();
+
+        if (_roundRestartTime && _curtime)
+            return *_roundRestartTime - *_curtime;
+        return {};
+    }
+
+    HookContext& hookContext;
+    cs2::C_CSGameRules* gameRules;
 };

@@ -3,14 +3,24 @@
 #include <utility>
 #include <type_traits>
 
-#include <CS2/Classes/Panorama.h>
+#include <CS2/Panorama/Transform3D.h>
 #include <GameClasses/MemAlloc.h>
-#include <MemoryPatterns/ClientPatterns.h>
 
 struct PanoramaTransformFactory {
+    explicit PanoramaTransformFactory(const void* transformTranslate3dVmt, const void* transformScale3dVmt) noexcept
+        : transformTranslate3dVmt{transformTranslate3dVmt}
+        , transformScale3dVmt{transformScale3dVmt}
+    {
+    }
+
     [[nodiscard]] cs2::CTransform3D* scale(float scale) const noexcept
     {
         return create<cs2::CTransformScale3D>(scale, scale, 1.0f);
+    }
+
+    [[nodiscard]] cs2::CTransform3D* scale(float scaleX, float scaleY) const noexcept
+    {
+        return create<cs2::CTransformScale3D>(scaleX, scaleY, 1.0f);
     }
 
     [[nodiscard]] cs2::CTransform3D* translate(cs2::CUILength x, cs2::CUILength y) const noexcept
@@ -40,6 +50,6 @@ private:
             static_assert(!std::is_same_v<T, T>, "Unsupported type");
     }
 
-    const void* transformTranslate3dVmt{ ClientPatterns::transformTranslate3dVMT() };
-    const void* transformScale3dVmt{ ClientPatterns::transformScale3dVMT() };
+    const void* transformTranslate3dVmt;
+    const void* transformScale3dVmt;
 };

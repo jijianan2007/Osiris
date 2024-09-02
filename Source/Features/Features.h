@@ -1,19 +1,31 @@
 #pragma once
 
-#include <Helpers/PlantedC4Provider.h>
+#include <Hooks/Hooks.h>
 
 #include "Hud/HudFeatures.h"
 #include "Sound/SoundFeatures.h"
 #include "Visuals/VisualFeatures.h"
 
+#include "FeaturesStates.h"
+
 struct Features {
-    Features(LoopModeGameHook& loopModeGameHook, ViewRenderHook& viewRenderHook, SoundWatcher& soundWatcher) noexcept
-        : visuals{ loopModeGameHook }
-        , soundFeatures{ viewRenderHook, soundWatcher }
+    [[nodiscard]] HudFeatures hudFeatures() const noexcept
     {
+        return HudFeatures{states.hudFeaturesStates, hookDependencies};
     }
 
-    HudFeatures hudFeatures;
-    VisualFeatures visuals;
-    SoundFeatures soundFeatures;
+    [[nodiscard]] SoundFeatures soundFeatures() const noexcept
+    {
+        return SoundFeatures{states.soundFeaturesStates, helpers, hooks.viewRenderHook, hookDependencies};
+    }
+
+    [[nodiscard]] VisualFeatures visualFeatures() const noexcept
+    {
+        return VisualFeatures{hookDependencies, states.visualFeaturesStates, helpers, hooks.viewRenderHook};
+    }
+
+    FeaturesStates& states;
+    FeatureHelpers& helpers;
+    Hooks& hooks;
+    HookDependencies& hookDependencies;
 };

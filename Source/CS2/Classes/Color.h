@@ -6,10 +6,12 @@ namespace cs2
 {
 
 struct Color {
-    Color(std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint8_t a = 255) noexcept
+    constexpr Color(std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint8_t a = 255) noexcept
         : rgba{ r, g, b, a }
     {
     }
+
+    constexpr bool operator==(const Color&) const = default;
 
     [[nodiscard]] std::uint8_t r() const noexcept
     {
@@ -29,6 +31,11 @@ struct Color {
     [[nodiscard]] std::uint8_t a() const noexcept
     {
         return rgba[3];
+    }
+
+    [[nodiscard]] auto setAlpha(std::uint8_t newAlpha) const noexcept
+    {
+        return Color{r(), g(), b(), newAlpha};
     }
 
 private:

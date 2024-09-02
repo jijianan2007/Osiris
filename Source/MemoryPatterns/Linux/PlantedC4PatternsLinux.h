@@ -1,40 +1,39 @@
 #pragma once
 
-#include <GlobalContext.h>
-#include <MemoryPatterns/PlantedC4Patterns.h>
+#include <GameClasses/OffsetTypes/PlantedC4Offset.h>
 #include <MemorySearch/BytePatternLiteral.h>
 
-inline BombSiteOffset PlantedC4Patterns::m_nBombSite() noexcept
-{
-    return BombSiteOffset{
-        GlobalContext::instance().clientPatternFinder("E8 ? ? ? ? 8B 55 A8 84 C0"_pat).add(1).abs().add(2).as<std::int32_t*>()
-    };
-}
+template <typename PatternFinders>
+struct PlantedC4Patterns {
+    const PatternFinders& patternFinders;
 
-inline BombTickingOffset PlantedC4Patterns::m_bBombTicking() noexcept
-{
-    return BombTickingOffset{
-        GlobalContext::instance().clientPatternFinder("74 EB 41 80 BC 24 ? ? ? ? ? 0F"_pat).add(6).as<std::int32_t*>()
-    };
-}
+    [[nodiscard]] cs2::CUtlVector<cs2::CPlantedC4*>* plantedC4s() const noexcept
+    {
+        return patternFinders.clientPatternFinder("0F 85 ? ? ? ? 48 8D 05 ? ? ? ? 8B 10"_pat).add(9).abs().template as<cs2::CUtlVector<cs2::CPlantedC4*>*>();
+    }
 
-inline BombBlowTimeOffset PlantedC4Patterns::m_flC4Blow() noexcept
-{
-    return BombBlowTimeOffset{
-        GlobalContext::instance().clientPatternFinder("F3 0F 10 83 ? ? ? ? F3 0F 5C C1 0F 2F E0"_pat).add(4).as<std::int32_t*>()
-    };
-}
+    [[nodiscard]] BombSiteOffset m_nBombSite() const noexcept
+    {
+        return patternFinders.clientPatternFinder("83 BF ? ? ? ? 01 0F 94 C0 C3"_pat).add(2).template readOffset<BombSiteOffset>();
+    }
 
-inline BombDefuserOffset PlantedC4Patterns::m_hBombDefuser() noexcept
-{
-    return BombDefuserOffset{
-        GlobalContext::instance().clientPatternFinder("E8 ? ? ? ? 8B 8B ? ? ? ? 83 F9 FF 0F 84 ? ? ? ? 48 8B 3D"_pat).add(7).as<std::int32_t*>()
-    };
-}
+    [[nodiscard]] BombTickingOffset m_bBombTicking() const noexcept
+    {
+        return patternFinders.clientPatternFinder("00 84 C0 74 ? 80 BB ? ? ? ? 00 74 ? 80"_pat).add(7).template readOffset<BombTickingOffset>();
+    }
 
-inline BombDefuseEndTimeOffset PlantedC4Patterns::m_flDefuseCountDown() noexcept
-{
-    return BombDefuseEndTimeOffset{
-        GlobalContext::instance().clientPatternFinder("74 ? F3 0F 10 80 ? ? ? ? 84"_pat).add(6).as<std::int32_t*>()
-    };
-}
+    [[nodiscard]] BombBlowTimeOffset m_flC4Blow() const noexcept
+    {
+        return patternFinders.clientPatternFinder("F3 0F 10 83 ? ? ? ? F3 0F 5C C1 0F 2F E0"_pat).add(4).template readOffset<BombBlowTimeOffset>();
+    }
+
+    [[nodiscard]] BombDefuserOffset m_hBombDefuser() const noexcept
+    {
+        return patternFinders.clientPatternFinder("E8 ? ? ? ? 8B 8B ? ? ? ? 83 F9 FF 0F 84 ? ? ? ? 48 8B 3D"_pat).add(7).template readOffset<BombDefuserOffset>();
+    }
+
+    [[nodiscard]] BombDefuseEndTimeOffset m_flDefuseCountDown() const noexcept
+    {
+        return patternFinders.clientPatternFinder("74 ? F3 0F 10 80 ? ? ? ? 84"_pat).add(6).template readOffset<BombDefuseEndTimeOffset>();
+    }
+};

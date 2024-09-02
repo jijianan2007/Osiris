@@ -5,9 +5,13 @@
 #include "ClipSpaceCoordinates.h"
 #include <CS2/Classes/Vector.h>
 #include <CS2/Classes/VMatrix.h>
-#include <MemoryPatterns/ClientPatterns.h>
 
 struct WorldToClipSpaceConverter {
+    explicit WorldToClipSpaceConverter(const cs2::VMatrix* worldToProjectionMatrix) noexcept
+        : worldToProjectionMatrix{worldToProjectionMatrix}
+    {
+    }
+
     [[nodiscard]] explicit operator bool() const noexcept
     {
         return worldToProjectionMatrix != nullptr;
@@ -27,5 +31,5 @@ struct WorldToClipSpaceConverter {
     }
 
 private:
-    const cs2::VMatrix* worldToProjectionMatrix{ ClientPatterns::worldToProjectionMatrix() };
+    const cs2::VMatrix* worldToProjectionMatrix;
 };

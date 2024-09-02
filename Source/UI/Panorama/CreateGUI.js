@@ -150,7 +150,7 @@ $.Osiris = (function () {
     return content;
   };
 
-  var createEnableDisableDropDown = function (parent, labelText, section, feature, enableString, disableString) {
+  var createDropDown = function (parent, labelText, section, feature, options, defaultIndex = 1) {
     var container = $.CreatePanel('Panel', parent, '', {
       class: "SettingsMenuDropdownContainer"
     });
@@ -165,49 +165,86 @@ $.Osiris = (function () {
       oninputsubmit: `$.Osiris.dropDownUpdated('${section}', '${feature}');`
     });
 
-    dropdown.AddOption($.CreatePanel('Label', dropdown, '1', {
-      value: "1",
-      text: enableString
-    }));
+    for (let i = 0; i < options.length; ++i) {
+      dropdown.AddOption($.CreatePanel('Label', dropdown, i, {
+      value: i,
+      text: options[i]
+      }));
+    }
 
-    dropdown.AddOption($.CreatePanel('Label', dropdown, '0', {
-      value: "0",
-      text: disableString
-    }));
-
-    dropdown.SetSelectedIndex(1);
+    dropdown.SetSelectedIndex(defaultIndex);
     dropdown.RefreshDisplay();
   };
 
   var createOnOffDropDown = function (parent, labelText, section, feature) {
-    createEnableDisableDropDown(parent, labelText, section, feature, "On", "Off");
+    createDropDown(parent, labelText, section, feature, ["On", "Off"]);
   };
 
-  var createYesNoDropDown = function (parent, labelText, section, feature) {
-    createEnableDisableDropDown(parent, labelText, section, feature, "Yes", "No");
+  var createYesNoDropDown = function (parent, labelText, section, feature, defaultIndex = 1) {
+    createDropDown(parent, labelText, section, feature, ["Yes", "No"], defaultIndex);
   };
 
   var hud = createTab('hud');
+  
   var bomb = createSection(hud, 'Bomb');
-  createOnOffDropDown(bomb, "Bomb Timer", 'hud', 'bomb_timer');
+  createYesNoDropDown(bomb, "Show Bomb Explosion Countdown And Site", 'hud', 'bomb_timer');
   $.CreatePanel('Panel', bomb, '', { class: "horizontal-separator" });
-  createOnOffDropDown(bomb, "Defusing Alert", 'hud', 'defusing_alert');
+  createYesNoDropDown(bomb, "Show Bomb Defuse Countdown", 'hud', 'defusing_alert');
+  
   var killfeed = createSection(hud, 'Killfeed');
-  createYesNoDropDown(killfeed, "Preserve My Killfeed", 'hud', 'preserve_killfeed');
+  $.CreatePanel('Panel', killfeed, '', { class: "horizontal-separator" });
+  createYesNoDropDown(killfeed, "Preserve My Killfeed During The Round", 'hud', 'preserve_killfeed');
+
+  var time = createSection(hud, 'Time');
+  $.CreatePanel('Panel', time, '', { class: "horizontal-separator" });
+  createYesNoDropDown(time, "Show Post-round Timer", 'hud', 'postround_timer');
 
   var visuals = createTab('visuals');
-  var weapons = createSection(visuals, 'Weapons');
-  createYesNoDropDown(weapons, "Remove Scope Overlay", 'visuals', 'remove_scope_overlay');
+
+  var playerInfo = createSection(visuals, 'Player Information Through Walls');
+  createDropDown(playerInfo, "Enabled", 'visuals', 'player_information_through_walls', ['Enemies', 'All Players', 'Off'], 2);
+  $.CreatePanel('Panel', playerInfo, '', { class: "horizontal-separator" });
+  createYesNoDropDown(playerInfo, "Show Player Position", 'visuals', 'player_info_position', 0);
+  $.CreatePanel('Panel', playerInfo, '', { class: "horizontal-separator" });
+  createDropDown(playerInfo, "Player Position Arrow Color", 'visuals', 'player_info_position_color', ['Player / Team Color', 'Team Color'], 0);
+  $.CreatePanel('Panel', playerInfo, '', { class: "horizontal-separator" });
+  createYesNoDropDown(playerInfo, "Show Player Health", 'visuals', 'player_info_health', 0);
+  $.CreatePanel('Panel', playerInfo, '', { class: "horizontal-separator" });
+  createDropDown(playerInfo, "Player Health Text Color", 'visuals', 'player_info_health_color', ['Health-based', 'White'], 0);
+  $.CreatePanel('Panel', playerInfo, '', { class: "horizontal-separator" });
+  createYesNoDropDown(playerInfo, "Show Player Active Weapon Icon", 'visuals', 'player_info_weapon', 0);
+  $.CreatePanel('Panel', playerInfo, '', { class: "horizontal-separator" });
+  createYesNoDropDown(playerInfo, "Show Player Active Weapon Ammo", 'visuals', 'player_info_weapon_clip', 0);
+  $.CreatePanel('Panel', playerInfo, '', { class: "horizontal-separator" });
+  createYesNoDropDown(playerInfo, "Show Defuse Icon", 'visuals', 'player_info_defuse', 0);
+  $.CreatePanel('Panel', playerInfo, '', { class: "horizontal-separator" });
+  createYesNoDropDown(playerInfo, 'Show Picking Up Hostage Icon', 'visuals', 'player_info_hostage_pickup', 0);
+  $.CreatePanel('Panel', playerInfo, '', { class: "horizontal-separator" });
+  createYesNoDropDown(playerInfo, 'Show Rescuing Hostage Icon', 'visuals', 'player_info_hostage_rescue', 0);
+  $.CreatePanel('Panel', playerInfo, '', { class: "horizontal-separator" });
+  createYesNoDropDown(playerInfo, 'Show Blinded By Flashbang Icon', 'visuals', 'player_info_blinded', 0);
+
+  var playerOutlineGlow = createSection(visuals, 'Player Outline Glow');
+  $.CreatePanel('Panel', playerOutlineGlow, '', { class: "horizontal-separator" });
+  createDropDown(playerOutlineGlow, "Enabled", 'visuals', 'player_outline_glow', ['Enemies', 'All Players', 'Off'], 2);
 
   var sound = createTab('sound');
-  var visualization = createSection(sound, 'Visualization');
-  createYesNoDropDown(visualization, "Visualize Player Footsteps", 'sound', 'visualize_player_footsteps');
-  $.CreatePanel('Panel', visualization, '', { class: "horizontal-separator" });
-  createYesNoDropDown(visualization, "Visualize Bomb Plant", 'sound', 'visualize_bomb_plant');
-  $.CreatePanel('Panel', visualization, '', { class: "horizontal-separator" });
-  createYesNoDropDown(visualization, "Visualize Bomb Beep", 'sound', 'visualize_bomb_beep');
-  $.CreatePanel('Panel', visualization, '', { class: "horizontal-separator" });
-  createYesNoDropDown(visualization, "Visualize Bomb Defuse", 'sound', 'visualize_bomb_defuse');
+  
+  var playerSoundVisualization = createSection(sound, 'Player Sound Visualization');
+  $.CreatePanel('Panel', playerSoundVisualization, '', { class: "horizontal-separator" });
+  createYesNoDropDown(playerSoundVisualization, "Visualize Player Footstep Sound", 'sound', 'visualize_player_footsteps');
+
+  var bombSoundVisualization = createSection(sound, 'Bomb Sound Visualization');
+  createYesNoDropDown(bombSoundVisualization, "Visualize Bomb Plant Sound", 'sound', 'visualize_bomb_plant');
+  $.CreatePanel('Panel', bombSoundVisualization, '', { class: "horizontal-separator" });
+  createYesNoDropDown(bombSoundVisualization, "Visualize Bomb Beep Sound", 'sound', 'visualize_bomb_beep');
+  $.CreatePanel('Panel', bombSoundVisualization, '', { class: "horizontal-separator" });
+  createYesNoDropDown(bombSoundVisualization, "Visualize Bomb Defuse Sound", 'sound', 'visualize_bomb_defuse');
+
+  var weaponSoundVisualization = createSection(sound, 'Weapon Sound Visualization');
+  createYesNoDropDown(weaponSoundVisualization, "Visualize Weapon Scope Sound", 'sound', 'visualize_scope_sound');
+  $.CreatePanel('Panel', weaponSoundVisualization, '', { class: "horizontal-separator" });
+  createYesNoDropDown(weaponSoundVisualization, "Visualize Weapon Reload Sound", 'sound', 'visualize_reload_sound');
 
   $.Osiris.navigateToTab('hud');
 })();

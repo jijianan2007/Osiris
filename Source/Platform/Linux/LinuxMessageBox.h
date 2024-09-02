@@ -1,18 +1,10 @@
 #pragma once
 
 #include <CS2/Constants/DllNames.h>
+#include <SDL/SdlConstants.h>
+#include <SDL/SdlDll.h>
+#include <SDL/SdlFunctions.h>
 #include "LinuxDynamicLibrary.h"
-
-namespace sdl3
-{
-
-struct SDL_Window;
-using SDL_ShowSimpleMessageBox = int(std::uint32_t flags, const char* title, const char* message, SDL_Window* window);
-
-constexpr auto SDL_MESSAGEBOX_ERROR = 0x10;
-constexpr auto SDL_MESSAGEBOX_WARNING = 0x20;
-
-}
 
 class LinuxMessageBox {
 public:
@@ -33,5 +25,5 @@ private:
             showSimpleMessageBox(flags, title, message, nullptr);
     }
 
-    sdl3::SDL_ShowSimpleMessageBox* showSimpleMessageBox = LinuxDynamicLibrary{ cs2::SDL_DLL }.getFunctionAddress("SDL_ShowSimpleMessageBox").as<sdl3::SDL_ShowSimpleMessageBox*>();
+    sdl3::SDL_ShowSimpleMessageBox* showSimpleMessageBox{SdlDll{}.showSimpleMessageBox()};
 };
