@@ -1,11 +1,11 @@
 #pragma once
 
-#include <GameClasses/PanelHandle.h>
+#include <GameClient/Panorama/PanoramaLabel.h>
+#include <GameClient/Panorama/PanelHandle.h>
 
 #include "PostRoundTimerCondition.h"
 #include "PostRoundTimerPanel.h"
 #include "PostRoundTimerPanelFactory.h"
-#include "PostRoundTimerState.h"
 
 template <typename HookContext>
 struct PostRoundTimerContext {
@@ -16,7 +16,7 @@ struct PostRoundTimerContext {
 
     [[nodiscard]] bool isGameRoundTimeVisible() const noexcept
     {
-        return _hookContext.hud().timerTextPanel().isVisible().value_or(false);
+        return _hookContext.hud().timerTextPanel().isVisible().valueOr(false);
     }
 
     [[nodiscard]] decltype(auto) gameRules() const noexcept
@@ -51,7 +51,12 @@ struct PostRoundTimerContext {
 
     [[nodiscard]] decltype(auto) localPlayerTeamNumber() const noexcept
     {
-        return _hookContext.localPlayerController2().teamNumber();
+        return _hookContext.localPlayerController().teamNumber();
+    }
+
+    [[nodiscard]] decltype(auto) config() const noexcept
+    {
+        return _hookContext.config();
     }
 
 private:

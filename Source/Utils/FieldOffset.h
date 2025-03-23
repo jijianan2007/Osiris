@@ -1,51 +1,9 @@
 #pragma once
 
+#include <cstddef>
 #include <concepts>
 
-template <typename FieldType>
-struct FieldValueProxy {
-    explicit FieldValueProxy(FieldType* field) noexcept
-        : field{ field }
-    {
-    }
-
-    [[nodiscard]] FieldType* get() const noexcept
-    {
-        return field;
-    }
-
-    [[nodiscard]] FieldType valueOr(const FieldType& defaultValue) const noexcept
-    {
-        if (field)
-            return *field;
-        return defaultValue;
-    }
-
-    void operator=(const FieldType& value) const noexcept
-    {
-        if (field)
-            *field = value;
-    }
-
-private:
-    FieldType* field;
-};
-
-template <>
-struct FieldValueProxy<void> {
-    explicit FieldValueProxy(void* field) noexcept
-        : field{field}
-    {
-    }
-
-    [[nodiscard]] void* get() const noexcept
-    {
-        return field;
-    }
-
-private:
-    void* field;
-};
+#include "OptionalPointee.h"
 
 template <typename ClassType, typename TField, std::integral TOffset>
 struct FieldOffset {
@@ -69,13 +27,13 @@ struct FieldOffset {
         return offset != OffsetType{};
     }
 
-    [[nodiscard]] FieldValueProxy<FieldType> of(ClassType* thisptr) const noexcept
+    [[nodiscard]] OptionalPointee<FieldType> of(ClassType* thisptr) const noexcept
     {
         using BytePointer = std::byte*;
         using FieldPointer = FieldType*;
         if (thisptr != nullptr && offset != OffsetType{})
-            return FieldValueProxy{ FieldPointer(BytePointer(thisptr) + offset) };
-        return FieldValueProxy<FieldType>{ nullptr };
+            return OptionalPointee{ FieldPointer(BytePointer(thisptr) + offset) };
+        return {};
     }
 
 private:

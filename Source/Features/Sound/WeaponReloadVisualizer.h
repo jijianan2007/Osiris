@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Details/WeaponReloadSound.h"
 #include "Details/SoundVisualizationFeature.h"
 #include "Details/SoundVisualizationPanelProperties.h"
 
@@ -12,4 +13,5 @@ struct WeaponReloadPanels {
     }
 };
 
-using WeaponReloadVisualizer = SoundVisualizationFeature<WeaponReloadPanels, WeaponReloadSound>;
+template <typename HookContext>
+using WeaponReloadVisualizer = SoundVisualizationFeature<HookContext, WeaponReloadPanels, WeaponReloadSound>;

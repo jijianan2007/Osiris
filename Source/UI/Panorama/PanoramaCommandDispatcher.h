@@ -3,16 +3,18 @@
 #include <string_view>
 
 #include <Features/Features.h>
-#include <Helpers/UnloadFlag.h>
+#include <GlobalContext/UnloadFlag.h>
 #include <Utils/StringParser.h>
 
 #include "SetCommandHandler.h"
 
+template <typename HookContext>
 struct PanoramaCommandDispatcher {
-    PanoramaCommandDispatcher(const char* commandline, Features features, UnloadFlag& unloadFlag) noexcept
+    PanoramaCommandDispatcher(const char* commandline, Features<HookContext> features, UnloadFlag& unloadFlag, HookContext& hookContext) noexcept
         : parser{commandline}
         , features{features}
         , unloadFlag{unloadFlag}
+        , hookContext{hookContext}
     {
     }
 
@@ -36,11 +38,12 @@ private:
         if (command == "unload") {
             unloadFlag.set();
         } else if (command == "set") {
-            SetCommandHandler{parser, features}();
+            SetCommandHandler{parser, features, hookContext}();
         }
     }
 
     StringParser parser;
-    Features features;
+    Features<HookContext> features;
     UnloadFlag& unloadFlag;
+    HookContext& hookContext;
 };

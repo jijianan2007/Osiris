@@ -5,7 +5,7 @@
 #include <Common/Visibility.h>
 #include "BombTimerContext.h"
 
-template <typename Context>
+template <typename HookContext, typename Context = BombTimerContext<HookContext>>
 class BombTimer {
 public:
     template <typename... Args>
@@ -35,9 +35,11 @@ public:
             context.bombTimerPanel().hide();
     }
 
+    void onDisable() const noexcept
+    {
+        context.bombTimerPanel().hide();
+    }
+
 private:
     Context context;
 };
-
-template <typename HookContext>
-BombTimer(HookContext&) -> BombTimer<BombTimerContext<HookContext>>;

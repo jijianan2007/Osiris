@@ -1,9 +1,9 @@
 #pragma once
 
-#include "PlayerInformationThroughWalls/PlayerInformationThroughWallsState.h"
-#include "PlayerOutlineGlow/PlayerOutlineGlowState.h"
+#include "ModelGlow/ModelGlowState.h"
+#include "PlayerInfoInWorld/PlayerInfoInWorldState.h"
 
 struct VisualFeaturesStates {
-    PlayerInformationThroughWallsState playerInformationThroughWallsState;
-    PlayerOutlineGlowState playerOutlineGlowState;
+    PlayerInfoInWorldState playerInfoInWorldState;
+    ModelGlowState modelGlowState;
 };

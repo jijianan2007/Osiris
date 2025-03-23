@@ -1,16 +1,22 @@
 #pragma once
 
-template <typename Context>
+#include <utility>
+
+#include "KillfeedPreserverConfigVariables.h"
+#include "KillfeedPreserverContext.h"
+
+template <typename HookContext, typename Context = KillfeedPreserverContext<HookContext>>
 class KillfeedPreserver {
 public:
-    explicit KillfeedPreserver(Context context) noexcept
-        : context{context}
+    template <typename... Args>
+    KillfeedPreserver(Args&&... args) noexcept
+        : context{std::forward<Args>(args)...}
     {
     }
 
     void run() noexcept
     {
-        if (context.state().enabled)
+        if (context.config().template getVariable<KillfeedPreserverEnabled>())
             context.deathNotices().forEach(context.preserveDeathNotice());
     }
 

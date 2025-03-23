@@ -1,13 +1,14 @@
 #pragma once
 
 #include <Features/Features.h>
-#include <FeatureHelpers/FeatureToggle.h>
 #include <Utils/StringParser.h>
 
+template <typename HookContext>
 struct SetCommandHandler {
-    SetCommandHandler(StringParser& parser, Features features) noexcept
+    SetCommandHandler(StringParser& parser, Features<HookContext> features, HookContext& hookContext) noexcept
         : parser{parser}
         , features{features}
+        , hookContext{hookContext}
     {
     }
 
@@ -26,59 +27,95 @@ private:
     void handleHudSection() const noexcept
     {
         if (const auto feature = parser.getLine('/'); feature == "bomb_timer") {
-            handleTogglableFeature(features.hudFeatures().bombTimerToggle());
+            handleTogglableVariable<BombTimerEnabled>();
         } else if (feature == "defusing_alert") {
-            handleTogglableFeature(features.hudFeatures().defusingAlertToggle());
+            handleTogglableVariable<DefusingAlertEnabled>();
         } else if (feature == "preserve_killfeed") {
-            handleTogglableFeature(features.hudFeatures().killfeedPreserveToggle());
+            handleTogglableVariable<KillfeedPreserverEnabled>();
         } else if (feature == "postround_timer") {
-            handleTogglableFeature(features.hudFeatures().postRoundTimerToggle());
+            handleTogglableVariable<PostRoundTimerEnabled>();
         }
     }
 
     void handleSoundSection() const noexcept
     {
         if (const auto feature = parser.getLine('/'); feature == "visualize_player_footsteps") {
-            handleTogglableFeature(features.soundFeatures().footstepVisualizerToggle());
+            handleTogglableVariable<FootstepSoundVisualizationEnabled>();
         } else if (feature == "visualize_bomb_plant") {
-            handleTogglableFeature(features.soundFeatures().bombPlantVisualizerToggle());
+            handleTogglableVariable<BombPlantSoundVisualizationEnabled>();
         } else if (feature == "visualize_bomb_beep") {
-            handleTogglableFeature(features.soundFeatures().bombBeepVisualizerToggle());
+            handleTogglableVariable<BombBeepSoundVisualizationEnabled>();
         } else if (feature == "visualize_bomb_defuse") {
-            handleTogglableFeature(features.soundFeatures().bombDefuseVisualizerToggle());
+            handleTogglableVariable<BombDefuseSoundVisualizationEnabled>();
         } else if (feature == "visualize_scope_sound") {
-            handleTogglableFeature(features.soundFeatures().weaponScopeVisualizerToggle());
+            handleTogglableVariable<WeaponScopeSoundVisualizationEnabled>();
         } else if (feature == "visualize_reload_sound") {
-            handleTogglableFeature(features.soundFeatures().weaponReloadVisualizerToggle());
+            handleTogglableVariable<WeaponReloadSoundVisualizationEnabled>();
         }
     }
 
     void handleVisualsSection() const noexcept
     {
         if (const auto feature = parser.getLine('/'); feature == "player_information_through_walls") {
-            handleFeature(features.visualFeatures().playerInformationThroughWalls());
+            handleFeature(features.visualFeatures().playerInfoInWorld());
         } else if (feature == "player_info_position") {
-            handleTogglableFeature(features.visualFeatures().playerPositionToggle());
+            handleTogglableVariable<PlayerInfoInWorldPlayerPositionArrowEnabled>();
         } else if (feature == "player_info_position_color") {
-            handleFeature(features.visualFeatures().playerPositionArrowColorToggle());
+            features.visualFeatures().playerInfoInWorld().updatePlayerPositionArrowColorMode(parser.getChar());
         } else if (feature == "player_info_health") {
-            handleTogglableFeature(features.visualFeatures().playerHealthToggle());
+            handleTogglableVariable<PlayerInfoInWorldPlayerHealthEnabled>();
         } else if (feature == "player_info_health_color") {
-            handleFeature(features.visualFeatures().playerHealthTextColorToggle());
+            features.visualFeatures().playerInfoInWorld().updatePlayerHealthColorMode(parser.getChar());
         } else if (feature == "player_info_weapon") {
-            handleTogglableFeature(features.visualFeatures().playerActiveWeaponToggle());
+            handleTogglableVariable<PlayerInfoInWorldActiveWeaponIconEnabled>();
         } else if (feature == "player_info_weapon_clip") {
-            handleTogglableFeature(features.visualFeatures().playerActiveWeaponAmmoToggle());
+            handleTogglableVariable<PlayerInfoInWorldActiveWeaponAmmoEnabled>();
         } else if (feature == "player_info_defuse") {
-            handleFeature(features.visualFeatures().playerDefuseIconToggle());
+            handleTogglableVariable<PlayerInfoInWorldBombDefuseIconEnabled>();
         } else if (feature == "player_info_hostage_pickup") {
-            handleFeature(features.visualFeatures().hostagePickupIconToggle());
+            handleTogglableVariable<PlayerInfoInWorldHostagePickupIconEnabled>();
         } else if (feature == "player_info_hostage_rescue") {
-            handleFeature(features.visualFeatures().hostageRescueIconToggle());
+            handleTogglableVariable<PlayerInfoInWorldHostageRescueIconEnabled>();
         } else if (feature == "player_info_blinded") {
-            handleFeature(features.visualFeatures().blindedIconToggle());
+            handleTogglableVariable<PlayerInfoInWorldBlindedIconEnabled>();
+        } else if (feature == "player_info_bomb_carrier") {
+            handleTogglableVariable<PlayerInfoInWorldBombCarrierIconEnabled>();
+        } else if (feature == "player_info_bomb_planting") {
+            handleTogglableVariable<PlayerInfoInWorldBombPlantIconEnabled>();
         } else if (feature == "player_outline_glow") {
             handleFeature(features.visualFeatures().playerOutlineGlowToggle());
+        } else if (feature == "player_outline_glow_color") {
+            features.visualFeatures().playerOutlineGlowToggle().updateColor(parser.getChar());
+        } else if (feature == "outline_glow_enable") {
+            handleTogglableVariable<OutlineGlowEnabled>();
+        } else if (feature == "weapon_outline_glow") {
+            handleTogglableVariable<WeaponOutlineGlowEnabled>();
+        } else if (feature == "defuse_kit_outline_glow") {
+            handleTogglableVariable<DefuseKitOutlineGlowEnabled>();
+        } else if (feature == "grenade_proj_outline_glow") {
+            handleTogglableVariable<GrenadeProjectileOutlineGlowEnabled>();
+        } else if (feature == "dropped_bomb_outline_glow") {
+            handleTogglableVariable<DroppedBombOutlineGlowEnabled>();
+        } else if (feature == "ticking_bomb_outline_glow") {
+            handleTogglableVariable<TickingBombOutlineGlowEnabled>();
+        } else if (feature == "hostage_outline_glow") {
+            handleTogglableVariable<HostageOutlineGlowEnabled>();
+        } else if (feature == "model_glow_enable") {
+            features.visualFeatures().modelGlowToggle().updateMasterSwitch(parser.getChar());
+        } else if (feature == "player_model_glow") {
+            features.visualFeatures().modelGlowToggle().updatePlayerModelGlowToggle(parser.getChar());
+        } else if (feature == "player_model_glow_color") {
+            features.visualFeatures().modelGlowToggle().updatePlayerModelGlowColor(parser.getChar());
+        } else if (feature == "weapon_model_glow") {
+            features.visualFeatures().modelGlowToggle().updateWeaponModelGlowToggle(parser.getChar());
+        } else if (feature == "dropped_bomb_model_glow") {
+            features.visualFeatures().modelGlowToggle().updateDroppedBombModelGlowToggle(parser.getChar());
+        } else if (feature == "ticking_bomb_model_glow") {
+            features.visualFeatures().modelGlowToggle().updateTickingBombModelGlowToggle(parser.getChar());
+        } else if (feature == "defuse_kit_model_glow") {
+            features.visualFeatures().modelGlowToggle().updateDefuseKitModelGlowToggle(parser.getChar());
+        } else if (feature == "grenade_proj_model_glow") {
+            features.visualFeatures().modelGlowToggle().updateGrenadeProjectileModelGlowToggle(parser.getChar());
         }
     }
 
@@ -102,6 +139,22 @@ private:
         }
     }
 
+    template <typename ConfigVariable>
+    void handleTogglableVariable() const noexcept
+    {
+        switch (parser.getChar()) {
+        case '1':
+            hookContext.config().template setVariable<ConfigVariable>(false);
+            break;
+        case '0':
+            hookContext.config().template setVariable<ConfigVariable>(true);
+            break;
+        default:
+            break;
+        }
+    }
+
     StringParser& parser;
-    Features features;
+    Features<HookContext> features;
+    HookContext& hookContext;
 };

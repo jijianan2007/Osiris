@@ -1,7 +1,12 @@
 #pragma once
 
-#include <CS2/Classes/Entities/C_BaseEntity.h>
+#include <cstring>
+
 #include <CS2/Classes/Color.h>
+#include <CS2/Classes/Glow.h>
+#include <GameClient/SceneSystem/SceneObject.h>
+#include <MemoryPatterns/PatternTypes/ClientPatternTypes.h>
+#include <MemoryPatterns/PatternTypes/GlowSceneObjectPatternTypes.h>
 #include <Platform/Macros/IsPlatform.h>
 
 #include "GlowSceneObjectPointer.h"
@@ -15,37 +20,56 @@ public:
     {
     }
 
-    void applyGlow(auto&& sceneObject, cs2::Color color) const noexcept
+    [[nodiscard]] decltype(auto) baseSceneObject() const noexcept
+    {
+        return hookContext.template make<SceneObject>(glowSceneObject());
+    }
+
+    void applyGlow(auto&& sceneObject, cs2::Color color, int glowRange) const noexcept
     {
         if (!sceneObject || !glowSceneObjectPointer)
             return;
 
-        if (const auto manageGlowSceneObject = hookContext.gameDependencies().manageGlowSceneObject) {
-            cs2::CGlowHelperSceneObject* glowSceneObject{glowSceneObjectPointer->value()};
+        if (const auto manageGlowSceneObject = hookContext.clientPatternSearchResults().template get<ManageGlowSceneObjectPointer>()) {
+            cs2::CGlowHelperSceneObject* tempGlowSceneObject{glowSceneObject()};
             cs2::CGlowHelperSceneObject* dummy{nullptr};
             float colorFloat[4]{color.r() / 255.0f, color.g() / 255.0f, color.b() / 255.0f, color.a() / 255.0f};
 
 #if IS_WIN64()
-            manageGlowSceneObject(&glowSceneObject, &dummy, sceneObject, colorFloat, 0, 0, 3, 1.0f);
+            manageGlowSceneObject(&tempGlowSceneObject, &dummy, sceneObject, colorFloat, 0, static_cast<float>(glowRange), 3, 1.0f);
 #elif IS_LINUX()
             double colorDouble[2];
             static_assert(sizeof(colorFloat) == sizeof(colorDouble));
             std::memcpy(colorDouble, colorFloat, sizeof(colorFloat));
-            manageGlowSceneObject(&glowSceneObject, &dummy, sceneObject, 3, colorDouble[0], colorDouble[1], 0.0f, 0.0f, 1.0f);
+            manageGlowSceneObject(&tempGlowSceneObject, &dummy, sceneObject, 3, colorDouble[0], colorDouble[1], 0.0f, static_cast<float>(glowRange), 1.0f);
 #endif
-
-            glowSceneObjectPointer->setValue(glowSceneObject);
+            glowSceneObjectPointer->setValue(tempGlowSceneObject);
         }
     }
 
-    void setGlowEntity(auto&& entity) const noexcept
+    [[nodiscard]] decltype(auto) glowEntity() const noexcept
     {
-        if (glowSceneObjectPointer && glowSceneObjectPointer->value()) {
-            hookContext.gameDependencies().glowSceneObjectDeps.offsetToGlowSceneObjectEntity.of(glowSceneObjectPointer->value()) = static_cast<cs2::C_BaseEntity*>(entity);
-        }
+        return hookContext.clientPatternSearchResults().template get<OffsetToGlowSceneObjectEntity>().of(glowSceneObject());
+    }
+
+    [[nodiscard]] decltype(auto) attachedSceneObject() const noexcept
+    {
+        return hookContext.clientPatternSearchResults().template get<OffsetToGlowSceneObjectAttachedSceneObject>().of(glowSceneObject());
+    }
+
+    [[nodiscard]] auto& storedGlowSceneObjectClass() const noexcept
+    {
+        return hookContext.glowSceneObjectState().glowSceneObjectClass;
     }
 
 private:
+    [[nodiscard]] cs2::CGlowHelperSceneObject* glowSceneObject() const noexcept
+    {
+        if (glowSceneObjectPointer)
+            return glowSceneObjectPointer->value();
+        return nullptr;
+    }
+
     HookContext& hookContext;
     GlowSceneObjectPointer* glowSceneObjectPointer;
 };

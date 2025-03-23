@@ -1,23 +1,32 @@
 # Osiris
 
-![Windows](https://github.com/danielkrupinski/Osiris/workflows/Windows/badge.svg?branch=master&event=push)
-![Linux](https://github.com/danielkrupinski/Osiris/workflows/Linux/badge.svg?branch=master&event=push)
+[![Windows](https://github.com/danielkrupinski/Osiris/actions/workflows/windows.yml/badge.svg?branch=master&event=push)](https://github.com/danielkrupinski/Osiris/actions/workflows/windows.yml)
+[![Linux](https://github.com/danielkrupinski/Osiris/actions/workflows/linux.yml/badge.svg?branch=master&event=push)](https://github.com/danielkrupinski/Osiris/actions/workflows/linux.yml)
 
 Cross-platform (Windows, Linux) game hack for **Counter-Strike 2** with GUI and rendering based on game's Panorama UI. Compatible with the latest game update on Steam.
 
 ## What's new
 
-* 2 September 2024
-    * Player outline glow now includes weapons carried by the player
+* 06 March 2025
+    * Settings are now automatically saved to the config file (`default.cfg`) inside `%appdata%\OsirisCS2\configs` directory on Windows and `$HOME/OsirisCS2/configs` on Linux. `default.cfg` file is loaded automatically when starting Osiris.
 
-* 31 August 2024
-    * Added player outline glow feature
+* 23 January 2025
+    * Added player model glow preview to the menu
 
-    ![Player outline glow](https://github.com/user-attachments/assets/667d1f58-bc3b-490b-b2d0-c0b9acd517b0)
+    ![Player Model Glow Preview](https://github.com/user-attachments/assets/361ff865-2a0c-4145-9fd0-5ff397f50972)
 
-* 17 August 2024 - new HUD feature: "Post-round timer"
+* 27 December 2024
+    * Added model glow for grenade projectiles
 
-![Post-round timer](https://github.com/user-attachments/assets/3ec7261b-e119-4972-b9bf-f85ac5646110)
+* 14 December 2024
+    * Added model glow for defuse kits on the ground
+
+    ![Defuse Kit Model Glow](https://github.com/user-attachments/assets/43dc555d-8c1d-40dc-b94a-3aa8f8396c7b)
+
+* 11 December 2024
+    * Added model glow for ticking bomb
+
+    ![Ticking Bomb Model Glow](https://github.com/user-attachments/assets/6cadde5a-f999-4649-b483-9122e7b350ba)
 
 ## Technical features
 
@@ -39,7 +48,7 @@ Cross-platform (Windows, Linux) game hack for **Counter-Strike 2** with GUI and 
 #### Linux
 
 * **CMake 3.24** or newer
-* **g++ 11 or newer** or **clang++ 15 or newer**
+* **g++ 11 or newer** or **clang++ 17 or newer**
 
 ### Compiling from source
 

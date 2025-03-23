@@ -1,21 +1,16 @@
 #pragma once
 
-#include <cstdint>
+#include <Platform/Macros/IsPlatform.h>
 
 #include "CSceneObject.h"
-
-#include <Platform/Macros/IsPlatform.h>
+#include "Entities/C_BaseEntity.h"
 
 namespace cs2
 {
 
-enum SceneObjectFlags {
-    SceneObjectFlag_IsDeleted = 0x20
-};
-
 struct CGlowHelperSceneObject : CSceneObject {
     using entity = C_BaseEntity*;
-    using flags = std::uint8_t;
+    using attachedSceneObject = CSceneObject*;
 };
 
 #if IS_WIN64()

@@ -1,75 +1,36 @@
 #pragma once
 
-#include <FeatureHelpers/FeatureHelpers.h>
-#include "PlayerInformationThroughWalls/PlayerInformationThroughWalls.h"
-#include "PlayerOutlineGlow/PlayerOutlineGlowToggle.h"
+#include <Hooks/ViewRenderHook.h>
+#include "ModelGlow/ModelGlowToggle.h"
+#include "PlayerInfoInWorld/PlayerInfoInWorld.h"
+#include "OutlineGlow/PlayerOutlineGlow/PlayerOutlineGlowToggle.h"
 #include "VisualFeaturesStates.h"
 
-class LoopModeGameHook;
-
+template <typename HookContext>
 struct VisualFeatures {
-    [[nodiscard]] PlayerInformationThroughWallsToggle playerInformationThroughWalls() const noexcept
+    VisualFeatures(HookContext& hookContext, VisualFeaturesStates& states, ViewRenderHook& viewRenderHook) noexcept
+        : hookContext{hookContext}
+        , states{states}
+        , viewRenderHook{viewRenderHook}
     {
-        return PlayerInformationThroughWallsToggle{states.playerInformationThroughWallsState, hookDependencies, viewRenderHook};
     }
 
-    [[nodiscard]] PlayerPositionToggle playerPositionToggle() const noexcept
+    [[nodiscard]] auto playerInfoInWorld() const noexcept
     {
-        return PlayerPositionToggle{states.playerInformationThroughWallsState};
-    }
-
-    [[nodiscard]] PlayerPositionArrowColorToggle playerPositionArrowColorToggle() const noexcept
-    {
-        return PlayerPositionArrowColorToggle{states.playerInformationThroughWallsState.playerPositionArrowColor};
-    }
-
-    [[nodiscard]] PlayerHealthToggle playerHealthToggle() const noexcept
-    {
-        return PlayerHealthToggle{states.playerInformationThroughWallsState};
-    }
-
-    [[nodiscard]] PlayerHealthTextColorToggle playerHealthTextColorToggle() const noexcept
-    {
-        return PlayerHealthTextColorToggle{states.playerInformationThroughWallsState.playerHealthTextColor};
-    }
-
-    [[nodiscard]] PlayerActiveWeaponToggle playerActiveWeaponToggle() const noexcept
-    {
-        return PlayerActiveWeaponToggle{states.playerInformationThroughWallsState};
-    }
-
-    [[nodiscard]] PlayerActiveWeaponAmmoToggle playerActiveWeaponAmmoToggle() const noexcept
-    {
-        return PlayerActiveWeaponAmmoToggle{states.playerInformationThroughWallsState};
-    }
-
-    [[nodiscard]] PlayerDefuseIconToggle playerDefuseIconToggle() const noexcept
-    {
-        return PlayerDefuseIconToggle{states.playerInformationThroughWallsState.playerStateIconsToShow};
-    }
-
-    [[nodiscard]] HostagePickupIconToggle hostagePickupIconToggle() const noexcept
-    {
-        return HostagePickupIconToggle{states.playerInformationThroughWallsState.playerStateIconsToShow};
-    }
-
-    [[nodiscard]] HostageRescueIconToggle hostageRescueIconToggle() const noexcept
-    {
-        return HostageRescueIconToggle{states.playerInformationThroughWallsState.playerStateIconsToShow};
-    }
-
-    [[nodiscard]] BlindedIconToggle blindedIconToggle() const noexcept
-    {
-        return BlindedIconToggle{states.playerInformationThroughWallsState.playerStateIconsToShow};
+        return PlayerInfoInWorldToggle{hookContext};
     }
 
     [[nodiscard]] decltype(auto) playerOutlineGlowToggle() const noexcept
     {
-        return hookDependencies.make<PlayerOutlineGlowToggle>();
+        return hookContext.template make<PlayerOutlineGlowToggle>();
     }
 
-    HookDependencies& hookDependencies;
+    [[nodiscard]] decltype(auto) modelGlowToggle() const noexcept
+    {
+        return hookContext.template make<ModelGlowToggle>();
+    }
+
+    HookContext& hookContext;
     VisualFeaturesStates& states;
-    FeatureHelpers& helpers;
     ViewRenderHook& viewRenderHook;
 };

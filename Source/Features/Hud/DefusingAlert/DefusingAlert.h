@@ -1,10 +1,15 @@
 #pragma once
 
-template <typename Context>
+#include <utility>
+
+#include "DefusingAlertContext.h"
+
+template <typename HookContext, typename Context = DefusingAlertContext<HookContext>>
 class DefusingAlert {
 public:
-    explicit DefusingAlert(Context context) noexcept
-        : context{context}
+    template <typename... Args>
+    DefusingAlert(Args&&... args) noexcept
+        : context{std::forward<Args>(args)...}
     {
     }
 
@@ -18,6 +23,11 @@ public:
             context.defusingAlertPanel().showAndUpdate();
         else
             context.defusingAlertPanel().hide();
+    }
+
+    void onDisable() const noexcept
+    {
+        context.defusingAlertPanel().hide();
     }
 
 private:

@@ -1,73 +1,29 @@
 #pragma once
 
+#include <Features/Sound/Details/SoundWatcher.h>
+#include <Features/Sound/Details/SoundWatcherState.h>
+#include <Hooks/ViewRenderHook.h>
+
+#include "Details/BombBeepSound.h"
+#include "Details/BombDefuseSound.h"
+#include "Details/BombPlantSound.h"
+#include "Details/FootstepSound.h"
+#include "Details/WeaponReloadSound.h"
+#include "Details/WeaponScopeSound.h"
 #include "BombBeepVisualizer.h"
 #include "BombDefuseVisualizer.h"
 #include "BombPlantVisualizer.h"
 #include "FootstepVisualizer.h"
-#include "SoundFeaturesStates.h"
 #include "WeaponReloadVisualizer.h"
 #include "WeaponScopeVisualizer.h"
-#include <Hooks/ViewRenderHook.h>
 
+template <typename HookContext>
 struct SoundFeatures {
-    [[nodiscard]] FootstepVisualizer footstepVisualizer() const noexcept
+    SoundFeatures(SoundWatcherState& soundWatcherState, ViewRenderHook& viewRenderHook, HookContext& hookContext) noexcept
+        : soundWatcherState{soundWatcherState}
+        , viewRenderHook{viewRenderHook}
+        , hookContext{hookContext}
     {
-        return soundVisualizationFeature<FootstepVisualizer>(states.footstepVisualizerState);
-    }
-
-    [[nodiscard]] BombPlantVisualizer bombPlantVisualizer() const noexcept
-    {
-        return soundVisualizationFeature<BombPlantVisualizer>(states.bombPlantVisualizerState);
-    }
-
-    [[nodiscard]] BombBeepVisualizer bombBeepVisualizer() const noexcept
-    {
-        return soundVisualizationFeature<BombBeepVisualizer>(states.bombBeepVisualizerState);
-    }
-
-    [[nodiscard]] BombDefuseVisualizer bombDefuseVisualizer() const noexcept
-    {
-        return soundVisualizationFeature<BombDefuseVisualizer>(states.bombDefuseVisualizerState);
-    }
-
-    [[nodiscard]] WeaponScopeVisualizer weaponScopeVisualizer() const noexcept
-    {
-        return soundVisualizationFeature<WeaponScopeVisualizer>(states.weaponScopeVisualizerState);
-    }
-
-    [[nodiscard]] WeaponReloadVisualizer weaponReloadVisualizer() const noexcept
-    {
-        return soundVisualizationFeature<WeaponReloadVisualizer>(states.weaponReloadVisualizerState);
-    }
-
-    [[nodiscard]] auto footstepVisualizerToggle() const noexcept
-    {
-        return soundVisualizationFeatureToggle<FootstepSound>(states.footstepVisualizerState);
-    }
-
-    [[nodiscard]] auto bombPlantVisualizerToggle() const noexcept
-    {
-        return soundVisualizationFeatureToggle<BombPlantSound>(states.bombPlantVisualizerState);
-    }
-
-    [[nodiscard]] auto bombBeepVisualizerToggle() const noexcept
-    {
-        return soundVisualizationFeatureToggle<BombBeepSound>(states.bombBeepVisualizerState);
-    }
-
-    [[nodiscard]] auto bombDefuseVisualizerToggle() const noexcept
-    {
-        return soundVisualizationFeatureToggle<BombDefuseSound>(states.bombDefuseVisualizerState);
-    }
-
-    [[nodiscard]] auto weaponScopeVisualizerToggle() const noexcept
-    {
-        return soundVisualizationFeatureToggle<WeaponScopeSound>(states.weaponScopeVisualizerState);
-    }
-
-    [[nodiscard]] auto weaponReloadVisualizerToggle() const noexcept
-    {
-        return soundVisualizationFeatureToggle<WeaponReloadSound>(states.weaponReloadVisualizerState);
     }
 
     void runOnViewMatrixUpdate() noexcept
@@ -80,31 +36,48 @@ struct SoundFeatures {
         weaponReloadVisualizer().run();
     }
 
-    SoundFeaturesStates& states;
-    FeatureHelpers& helpers;
-    ViewRenderHook& viewRenderHook;
-    HookDependencies& hookDependencies;
-
 private:
-    template <typename SoundVisualizationFeature>
-    [[nodiscard]] SoundVisualizationFeature soundVisualizationFeature(auto& state) const noexcept
+    [[nodiscard]] auto footstepVisualizer() const noexcept
     {
-        return SoundVisualizationFeature{
-            state,
-            hookDependencies,
+        return soundVisualizationFeature<FootstepVisualizer>();
+    }
+
+    [[nodiscard]] auto bombPlantVisualizer() const noexcept
+    {
+        return soundVisualizationFeature<BombPlantVisualizer>();
+    }
+
+    [[nodiscard]] auto bombBeepVisualizer() const noexcept
+    {
+        return soundVisualizationFeature<BombBeepVisualizer>();
+    }
+
+    [[nodiscard]] auto bombDefuseVisualizer() const noexcept
+    {
+        return soundVisualizationFeature<BombDefuseVisualizer>();
+    }
+
+    [[nodiscard]] auto weaponScopeVisualizer() const noexcept
+    {
+        return soundVisualizationFeature<WeaponScopeVisualizer>();
+    }
+
+    [[nodiscard]] auto weaponReloadVisualizer() const noexcept
+    {
+        return soundVisualizationFeature<WeaponReloadVisualizer>();
+    }
+
+    template <template <typename> typename SoundVisualizationFeature>
+    [[nodiscard]] auto soundVisualizationFeature() const noexcept
+    {
+        return SoundVisualizationFeature<HookContext>{
+            hookContext,
             viewRenderHook,
-            SoundWatcher{helpers.soundWatcherState, hookDependencies},
+            SoundWatcher<HookContext>{soundWatcherState, hookContext},
         };
     }
 
-    template <typename SoundType>
-    [[nodiscard]] SoundVisualizationFeatureToggle<SoundType> soundVisualizationFeatureToggle(auto& state) const noexcept
-    {
-        return SoundVisualizationFeatureToggle<SoundType>{
-            state,
-            hookDependencies,
-            SoundWatcher{helpers.soundWatcherState, hookDependencies},
-            viewRenderHook,
-        };
-    }
+    SoundWatcherState& soundWatcherState;
+    ViewRenderHook& viewRenderHook;
+    HookContext& hookContext;
 };

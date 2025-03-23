@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Details/BombDefuseSound.h"
 #include "Details/SoundVisualizationFeature.h"
 #include "Details/SoundVisualizationPanelProperties.h"
 
@@ -13,4 +14,5 @@ struct BombDefusePanels {
     }
 };
 
-using BombDefuseVisualizer = SoundVisualizationFeature<BombDefusePanels, BombDefuseSound>;
+template <typename HookContext>
+using BombDefuseVisualizer = SoundVisualizationFeature<HookContext, BombDefusePanels, BombDefuseSound>;

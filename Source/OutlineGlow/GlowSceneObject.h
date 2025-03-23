@@ -2,9 +2,10 @@
 
 #include <utility>
 
+#include <CS2/Classes/Color.h>
 #include "GlowSceneObjectContext.h"
 
-template <typename Context>
+template <typename HookContext, typename Context = GlowSceneObjectContext<HookContext>>
 class GlowSceneObject {
 public:
     template <typename... Args>
@@ -13,20 +14,40 @@ public:
     {
     }
 
-    void apply(auto&& entity, cs2::Color color) const noexcept
+    [[nodiscard]] decltype(auto) baseSceneObject() const noexcept
     {
-        context.applyGlow(entitySceneObject(entity), color);
-        context.setGlowEntity(entity);
+        return context.baseSceneObject();
+    }
+
+    void apply(auto&& sceneObject, cs2::Color color, int glowRange = 0) const noexcept
+    {
+        context.applyGlow(sceneObject, color, glowRange);
+        storeGlowSceneObjectClass();
+    }
+
+    void setGlowEntity(auto&& entity) const noexcept
+    {
+        context.glowEntity() = entity;
+    }
+
+    [[nodiscard]] decltype(auto) getAttachedSceneObject() const noexcept
+    {
+        return context.attachedSceneObject().valueOr(nullptr);
+    }
+
+    [[nodiscard]] auto isValidGlowSceneObject() const noexcept
+    {
+        return baseSceneObject().objectClass().equal(context.storedGlowSceneObjectClass());
     }
 
 private:
-    [[nodiscard]] decltype(auto) entitySceneObject(auto&& entity) const noexcept
+    void storeGlowSceneObjectClass() const noexcept
     {
-        return entity.renderComponent().sceneObjectUpdaters()[0].sceneObject();
+        if (auto& storedGlowSceneObjectClass = context.storedGlowSceneObjectClass(); storedGlowSceneObjectClass == 0xFF) {
+            if (const auto objectClass = baseSceneObject().objectClass(); objectClass.hasValue())
+                storedGlowSceneObjectClass = objectClass.value();
+        }
     }
 
     Context context;
 };
-
-template <typename HookContext>
-GlowSceneObject(HookContext&, GlowSceneObjectPointer*) -> GlowSceneObject<GlowSceneObjectContext<HookContext>>;

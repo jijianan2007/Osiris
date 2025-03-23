@@ -1,17 +1,14 @@
 #pragma once
 
-#include <CS2/Constants/ColorConstants.h>
-#include <GameClasses/PanoramaImagePanel.h>
-#include <GameClasses/PanoramaLabel.h>
-#include <GameClasses/PanoramaUiEngine.h>
-#include <GameClasses/PanoramaUiPanel.h>
+#include <GameClient/Panorama/PanoramaImagePanel.h>
+#include <GameClient/Panorama/PanoramaLabel.h>
+#include <GameClient/Panorama/PanoramaUiEngine.h>
 #include <Utils/Lvalue.h>
 
 #include "BombSiteIconPanel.h"
 #include "BombTimerCondition.h"
 #include "BombTimerPanel.h"
 #include "BombTimerPanelFactory.h"
-#include "BombTimerState.h"
 #include "BombTimerTextPanel.h"
 
 template <typename HookContext>
@@ -24,7 +21,7 @@ struct BombTimerContext {
     [[nodiscard]] bool hasTickingC4() const noexcept
     {
         const auto plantedC4{_context.plantedC4()};
-        return plantedC4 && plantedC4->isTicking();
+        return plantedC4 && plantedC4->isTicking().valueOr(true) && plantedC4->getTimeToExplosion().greaterThan(0.0f).valueOr(false);
     }
 
     [[nodiscard]] auto tickingC4() const noexcept
@@ -49,21 +46,21 @@ struct BombTimerContext {
 
     [[nodiscard]] decltype(auto) bombTimerContainerPanel() const noexcept
     {
-        if (auto&& bombTimerContainer = _context.panels().getPanelFromHandle(state().bombTimerContainerPanelHandle))
+        if (auto&& bombTimerContainer = uiEngine().getPanelFromHandle(state().bombTimerContainerPanelHandle))
             return utils::lvalue<decltype(bombTimerContainer)>(bombTimerContainer);
 
         updatePanelHandles();
-        return _context.panels().getPanelFromHandle(state().bombTimerContainerPanelHandle);
+        return uiEngine().getPanelFromHandle(state().bombTimerContainerPanelHandle);
     }
 
     [[nodiscard]] auto bombSiteIconPanel() const noexcept
     {
-        return BombSiteIconPanel{_context.panels().getPanelFromHandle(state().bombSiteIconPanelHandle).clientPanel().template as<PanoramaImagePanel>()};
+        return BombSiteIconPanel{uiEngine().getPanelFromHandle(state().bombSiteIconPanelHandle).clientPanel().template as<PanoramaImagePanel>()};
     }
 
     [[nodiscard]] auto bombTimerTextPanel() const noexcept
     {
-        return BombTimerTextPanel{_context.panels().getPanelFromHandle(state().bombTimerPanelHandle).clientPanel().template as<PanoramaLabel>()};
+        return BombTimerTextPanel{uiEngine().getPanelFromHandle(state().bombTimerPanelHandle).clientPanel().template as<PanoramaLabel>()};
     }
 
     void updatePanelHandles() const noexcept
@@ -84,6 +81,16 @@ struct BombTimerContext {
         return _context.featuresStates().hudFeaturesStates.bombTimerState;
     }
 
+    [[nodiscard]] decltype(auto) config() const noexcept
+    {
+        return _context.config();
+    }
+
 private:
+    [[nodiscard]] decltype(auto) uiEngine() const noexcept
+    {
+        return _context.template make<PanoramaUiEngine>();
+    }
+
     HookContext& _context;
 };

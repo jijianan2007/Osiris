@@ -1,23 +1,34 @@
 #pragma once
 
+#include <Config/ConfigState.h>
 #include <CS2/Classes/CLoopModeGame.h>
-#include <GameDependencies/GameDependencies.h>
-#include <GameDLLs/Tier0Dll.h>
-#include <FeatureHelpers/FeatureHelpers.h>
-#include <FeatureHelpers/RenderingHookEntityLoop.h>
-#include <FeatureHelpers/Sound/SoundWatcher.h>
+#include <GameClient/ConVars/ConVars.h>
+#include <GameClient/FileNameSymbolTableState.h>
+#include <GameClient/Hud/HudState.h>
+#include <GameClient/MemAllocState.h>
+#include <GameClient/Panorama/PanoramaSymbols.h>
+#include <OutlineGlow/GlowSceneObjectState.h>
+#include <GameClient/DLLs/Tier0Dll.h>
+#include <GameClient/Entities/EntityClassifier.h>
+#include <Features/Common/RenderingHookEntityLoop.h>
+#include <Features/Sound/Details/SoundWatcher.h>
+#include <Features/Common/InWorldPanelsState.h>
 #include <Features/Features.h>
 #include <Features/FeaturesStates.h>
 #include <Features/FeaturesUnloadHandler.h>
-#include <Helpers/PatternNotFoundLogger.h>
-#include <Helpers/UnloadFlag.h>
+#include <Features/Visuals/ModelGlow/Preview/PlayerModelGlowPreviewState.h>
+#include <Features/Visuals/PlayerInfoInWorld/PlayerInfoPanelCacheState.h>
+#include <MemoryPatterns/MemoryPatterns.h>
+#include <MemorySearch/PatternNotFoundLogger.h>
+#include "UnloadFlag.h"
 #include <Hooks/Hooks.h>
 #include <Hooks/PeepEventsHook.h>
-#include <Hud/BombStatus/BombStatusPanelManager.h>
-#include <Hud/BombStatus/BombStatusPanelManagerContext.h>
-#include <Hud/BombStatus/BombStatusPanelState.h>
-#include <Hud/BombStatus/BombStatusPanelUnloadHandler.h>
+#include <GameClient/Hud/BombStatus/BombStatusPanelManager.h>
+#include <GameClient/Hud/BombStatus/BombStatusPanelManagerContext.h>
+#include <GameClient/Hud/BombStatus/BombStatusPanelState.h>
+#include <GameClient/Hud/BombStatus/BombStatusPanelUnloadHandler.h>
 #include <MemorySearch/PatternFinder.h>
+#include <MemorySearch/PatternSearchResults.h>
 #include <UI/Panorama/PanoramaGUI.h>
 #include <UI/Panorama/PanoramaGuiState.h>
 #include <UI/Panorama/PanoramaGuiUnloadHandler.h>
@@ -26,96 +37,57 @@
 #include <Platform/VmtFinder.h>
 #include <Vmt/VmtLengthCalculator.h>
 
+#include "OsirisDirectoryPath.h"
 #include "PeepEventsHookResult.h"
 
 #include <CS2/Classes/ConVarTypes.h>
 
 struct FullGlobalContext {
-    FullGlobalContext(PeepEventsHook peepEventsHook, DynamicLibrary clientDLL, DynamicLibrary panoramaDLL, const MemoryPatterns& memoryPatterns) noexcept
-        : _gameDependencies{
-            memoryPatterns,
-            VmtFinder{clientDLL.getVmtFinderParams()},
-            VmtFinder{panoramaDLL.getVmtFinderParams()},
-            Tier0Dll{}}
+    FullGlobalContext(PeepEventsHook peepEventsHook, DynamicLibrary clientDLL, DynamicLibrary panoramaDLL, const MemoryPatterns& memoryPatterns, Tier0Dll tier0Dll) noexcept
+        : clientPatternSearchResults{memoryPatterns.patternFinders.clientPatternFinder.findPatterns(kClientPatterns)}
+        , sceneSystemPatternSearchResults{memoryPatterns.patternFinders.sceneSystemPatternFinder.findPatterns(kSceneSystemPatterns)}
+        , tier0PatternSearchResults{memoryPatterns.patternFinders.tier0PatternFinder.findPatterns(kTier0Patterns)}
+        , fileSystemPatternSearchResults{memoryPatterns.patternFinders.fileSystemPatternFinder.findPatterns(kFileSystemPatterns)}
+        , soundSystemPatternSearchResults{memoryPatterns.patternFinders.soundSystemPatternFinder.findPatterns(kSoundSystemPatterns)}
+        , panoramaPatternSearchResults{memoryPatterns.patternFinders.panoramaPatternFinder.findPatterns(kPanoramaPatterns)}
+        , fileNameSymbolTableState{tier0Dll}
+        , memAllocState{tier0Dll}
+        , stylePropertySymbolsAndVMTs{StylePropertySymbolMap{memoryPatterns.panelStylePatterns().stylePropertiesSymbols()}, VmtFinder{panoramaDLL.getVmtFinderParams()}}
         , hooks{
             peepEventsHook,
-            _gameDependencies.loopModeGame,
-            _gameDependencies.viewRender,
+            clientPatternSearchResults.get<ViewRenderPointer>(),
             VmtLengthCalculator{clientDLL.getCodeSection(), clientDLL.getVmtSection()}}
     {
     }
 
-    [[nodiscard]] GameDependencies& gameDependencies() noexcept
+    [[nodiscard]] auto features(auto& dependencies) noexcept
     {
-        return _gameDependencies;
+        return Features{featuresStates, hooks, dependencies};
     }
 
-    [[nodiscard]] FeatureHelpers& getFeatureHelpers() noexcept
-    {
-        return featureHelpers;
-    }
-    
-    void onRenderStart(cs2::CViewRender* thisptr) noexcept
-    {
-        hooks.viewRenderHook.getOriginalOnRenderStart()(thisptr);
-
-        HookDependencies dependencies{_gameDependencies, featureHelpers, bombStatusPanelState, inWorldPanelContainerState, panoramaGuiState, featuresStates, glowSceneObjectsState, hooks};
-        SoundWatcher soundWatcher{featureHelpers.soundWatcherState, dependencies};
-        soundWatcher.update();
-        features(dependencies).soundFeatures().runOnViewMatrixUpdate();
-
-        PlayerInformationThroughWalls playerInformationThroughWalls{featuresStates.visualFeaturesStates.playerInformationThroughWallsState, dependencies};
-        RenderingHookEntityLoop{dependencies, playerInformationThroughWalls}.run();
-        playerInformationThroughWalls.hideUnusedPanels();
-        dependencies.make<GlowSceneObjects>().removeUnreferencedObjects();
-    }
-
-    [[nodiscard]] PeepEventsHookResult onPeepEventsHook(bool fullContextJustInitialized) noexcept
-    {
-        HookDependencies dependencies{_gameDependencies, featureHelpers, bombStatusPanelState, inWorldPanelContainerState, panoramaGuiState, featuresStates, glowSceneObjectsState, hooks};
-
-        if (fullContextJustInitialized) {
-            if (const auto mainMenu{_gameDependencies.mainMenu}; mainMenu && *mainMenu)
-                dependencies.make<PanoramaGUI>().init(PanoramaUiPanel{PanoramaUiPanelContext{dependencies, (*mainMenu)->uiPanel}});
-        }
-
-        features(dependencies).hudFeatures().defusingAlert().run();
-        features(dependencies).hudFeatures().killfeedPreserver().run();
-        BombStatusPanelManager{BombStatusPanelManagerContext{dependencies}}.run();
-
-        UnloadFlag unloadFlag;
-        dependencies.make<PanoramaGUI>().run(features(dependencies), unloadFlag);
-        hooks.update();
-
-        if (unloadFlag) {
-            FeaturesUnloadHandler{dependencies, featuresStates}.handleUnload();
-            BombStatusPanelUnloadHandler{dependencies}.handleUnload();
-            InWorldPanelContainerUnloadHandler{dependencies}.handleUnload();
-            PanoramaGuiUnloadHandler{dependencies}.handleUnload();
-            hooks.forceUninstall();
-        }
-
-        return PeepEventsHookResult{hooks.peepEventsHook.original, static_cast<bool>(unloadFlag)};
-    }
-
-    [[nodiscard]] cs2::CLoopModeGame::getWorldSession getWorldSessionHook(ReturnAddress) noexcept
-    {
-        return hooks.loopModeGameHook.originalGetWorldSession;
-    }
-
-private:
-    [[nodiscard]] Features features(HookDependencies& dependencies) noexcept
-    {
-        return Features{featuresStates, featureHelpers, hooks, dependencies};
-    }
-
-    GameDependencies _gameDependencies;
+    OsirisDirectoryPath osirisDirectoryPath;
+    ConfigState configState;
+    PatternSearchResults<decltype(kClientPatterns)> clientPatternSearchResults;
+    PatternSearchResults<decltype(kSceneSystemPatterns)> sceneSystemPatternSearchResults;
+    PatternSearchResults<decltype(kTier0Patterns)> tier0PatternSearchResults;
+    PatternSearchResults<decltype(kFileSystemPatterns)> fileSystemPatternSearchResults;
+    PatternSearchResults<decltype(kSoundSystemPatterns)> soundSystemPatternSearchResults;
+    PatternSearchResults<decltype(kPanoramaPatterns)> panoramaPatternSearchResults;
+    FileNameSymbolTableState fileNameSymbolTableState;
+    GlowSceneObjectState glowSceneObjectState;
+    HudState hudState;
+    MemAllocState memAllocState;
+    StylePropertiesSymbolsAndVMTs stylePropertySymbolsAndVMTs;
+    std::optional<ConVars> conVars;
+    std::optional<PanoramaSymbols> panoramaSymbols;
     Hooks hooks;
-    FeatureHelpers featureHelpers;
-public:
+    SoundWatcherState soundWatcherState;
     FeaturesStates featuresStates;
     PanoramaGuiState panoramaGuiState;
     BombStatusPanelState bombStatusPanelState;
-    InWorldPanelContainerState inWorldPanelContainerState;
+    InWorldPanelsState inWorldPanelsState;
     GlowSceneObjectsState glowSceneObjectsState;
+    EntityClassifier entityClassifier;
+    PlayerInfoPanelCacheState playerInfoPanelCacheState;
+    PlayerModelGlowPreviewState playerModelGlowPreviewState;
 };

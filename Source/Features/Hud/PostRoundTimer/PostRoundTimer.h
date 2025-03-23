@@ -1,9 +1,10 @@
 #pragma once
 
+#include <utility>
 #include <Common/Visibility.h>
 #include "PostRoundTimerContext.h"
 
-template <typename Context>
+template <typename HookContext, typename Context = PostRoundTimerContext<HookContext>>
 class PostRoundTimer {
 public:
     template <typename... Args>
@@ -29,9 +30,11 @@ public:
         }
     }
 
+    void onDisable() const noexcept
+    {
+        context.postRoundTimerPanel().hide();
+    }
+
 private:
     Context context;
 };
-
-template <typename HookContext>
-PostRoundTimer(HookContext&) -> PostRoundTimer<PostRoundTimerContext<HookContext>>;

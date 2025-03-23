@@ -1,11 +1,12 @@
 #pragma once
 
+#include <array>
+
 #include "BytePatternStorage.h"
 #include "BytePatternView.h"
-#include "PatternStringWildcard.h"
 
 template <BytePatternStorage Storage>
-auto operator"" _pat()
+auto operator ""_pat()
 {
     static constexpr std::array<char, Storage.size> pattern{[]{
         std::array<char, Storage.size> truncatedPattern;

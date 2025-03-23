@@ -1,6 +1,7 @@
 #pragma once
 
 #include "DefusingAlertState.h"
+#include <GameClient/Panorama/PanoramaUiEngine.h>
 
 template <typename HookContext>
 struct DefusingAlertUnloadHandler {
@@ -12,7 +13,7 @@ struct DefusingAlertUnloadHandler {
 
     void handleUnload() const noexcept
     {
-        hookContext.panels().deletePanelByHandle(state.defusingAlertContainerPanelHandle);
+        hookContext.template make<PanoramaUiEngine>().deletePanelByHandle(state.defusingAlertContainerPanelHandle);
     }
 
 private:
