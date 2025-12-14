@@ -3,6 +3,7 @@
 #include <span>
 
 #include "ConfigStringConversionState.h"
+#include <Platform/Macros/FunctionAttributes.h>
 
 class ConfigFromString {
 public:
@@ -47,13 +48,13 @@ public:
         decreaseNestingLevel();
     }
 
-    void boolean(const char8_t* key, auto&& valueSetter, auto&& /* valueGetter */) noexcept
+    void boolean(const char8_t* key, auto&& valueSetter, auto&& /* valueGetter */)
     {
         if (bool value; parseBool(key, value))
             valueSetter(value);
     }
 
-    void uint(const char8_t* key, auto&& valueSetter, auto&& /* valueGetter */) noexcept
+    void uint(const char8_t* key, auto&& valueSetter, auto&& /* valueGetter */)
     {
         if (std::uint64_t value; parseUint(key, value))
             valueSetter(value);
@@ -216,7 +217,7 @@ private:
         }
     }
 
-    bool skipWhitespaces() noexcept
+    [[NOINLINE]] bool skipWhitespaces() noexcept
     {
         while (readIndex < buffer.size() && isWhitespace(buffer[readIndex]))
             ++readIndex;

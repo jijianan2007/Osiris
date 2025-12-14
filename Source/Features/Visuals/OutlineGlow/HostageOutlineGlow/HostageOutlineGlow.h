@@ -1,9 +1,10 @@
 #pragma once
 
-#include <utility>
-
+#include <Features/Visuals/OutlineGlow/OutlineGlowConfigVariables.h>
 #include <Features/Visuals/OutlineGlow/OutlineGlowParams.h>
-#include "HostageOutlineGlowContext.h"
+#include <GameClient/Entities/EntityClassifier.h>
+#include <HookContext/HookContextMacros.h>
+#include <Utils/ColorUtils.h>
 
 template <typename HookContext>
 class HostageOutlineGlow {
@@ -13,10 +14,14 @@ public:
     {
     }
 
-    void applyGlowToHostage(auto&& hostage) const noexcept
+    [[nodiscard]] bool enabled() const
     {
-        if (hookContext.config().template getVariable<HostageOutlineGlowEnabled>())
-            hostage.applyGlowRecursively(outline_glow_params::kHostageColor);
+        return GET_CONFIG_VAR(outline_glow_vars::GlowHostages);
+    }
+
+    [[nodiscard]] color::HueInteger hue() const
+    {
+        return GET_CONFIG_VAR(outline_glow_vars::HostageHue);
     }
 
 private:

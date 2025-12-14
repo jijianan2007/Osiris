@@ -32,6 +32,13 @@ public:
         return *this;
     }
 
+    [[nodiscard]] Optional<cs2::Vector> absOrigin() const noexcept
+    {
+        if (entity && hookContext.patternSearchResults().template get<GetAbsOriginFunction>())
+            return *hookContext.patternSearchResults().template get<GetAbsOriginFunction>()(entity);
+        return {};
+    }
+
     [[nodiscard]] decltype(auto) entityIdentity() const noexcept
     {
         return hookContext.template make<EntityIdentity>(entity ? entity->identity : nullptr);
@@ -64,12 +71,12 @@ public:
 
     [[nodiscard]] decltype(auto) renderComponent() const noexcept
     {
-        return hookContext.template make<RenderComponent>(hookContext.clientPatternSearchResults().template get<OffsetToRenderComponent>().of(entity).valueOr(nullptr));
+        return hookContext.template make<RenderComponent>(hookContext.patternSearchResults().template get<OffsetToRenderComponent>().of(entity).valueOr(nullptr));
     }
 
     [[nodiscard]] decltype(auto) gameSceneNode() const noexcept
     {
-        return hookContext.template make<GameSceneNode>(hookContext.clientPatternSearchResults().template get<OffsetToGameSceneNode>().of(entity).valueOr(nullptr));
+        return hookContext.template make<GameSceneNode>(hookContext.patternSearchResults().template get<OffsetToGameSceneNode>().of(entity).valueOr(nullptr));
     }
 
     template <typename F>
@@ -96,7 +103,7 @@ public:
         renderComponent().sceneObjectUpdaters().forEachSceneObject([this, color, glowRange](auto&& sceneObject) {
             // this will still show glow for 1 frame when switching spectators as the flags aren't updated yet
             // todo: do player glow in player scene object updater hook to fix it
-            if (!sceneObject.isCulledByFirstPersonView().valueOr(false)) {
+            if (!sceneObject.isCulledByFirstPersonView().valueOr(false) && !sceneObject.isPartOfViewmodel().valueOr(false)) {
                 auto&& glowSceneObject = hookContext.template make<GlowSceneObjects>().getGlowSceneObject(sceneObject);
                 glowSceneObject.apply(sceneObject, color, glowRange);
                 glowSceneObject.setGlowEntity(*this);
@@ -107,9 +114,11 @@ public:
     void applySpawnProtectionEffect(cs2::Color color) const noexcept
     {
         renderComponent().sceneObjectUpdaters().forEachSceneObject([color](auto&& sceneObject) {
-            auto&& sceneObjectAttributes = sceneObject.attributes();
-            sceneObjectAttributes.setAttributeFloat(cs2::scene_object_attribute::kSpawnInvulnerabilityHash, 1.0f);
-            sceneObjectAttributes.setAttributeColor3(cs2::scene_object_attribute::kInvulnerabilityColorHash, color);
+            if (!sceneObject.isCulledByFirstPersonView().valueOr(false) && !sceneObject.isPartOfViewmodel().valueOr(false)) {
+                auto&& sceneObjectAttributes = sceneObject.attributes();
+                sceneObjectAttributes.setAttributeFloat(cs2::scene_object_attribute::kSpawnInvulnerabilityHash, 1.0f);
+                sceneObjectAttributes.setAttributeColor3(cs2::scene_object_attribute::kInvulnerabilityColorHash, color);
+            }
         });
     }
 
@@ -134,27 +143,27 @@ public:
 
     [[nodiscard]] auto hasOwner() const noexcept
     {
-        return hookContext.clientPatternSearchResults().template get<OffsetToOwnerEntity>().of(entity).toOptional().notEqual(cs2::CEntityHandle{cs2::INVALID_EHANDLE_INDEX});
+        return hookContext.patternSearchResults().template get<OffsetToOwnerEntity>().of(entity).toOptional().notEqual(cs2::CEntityHandle{cs2::INVALID_EHANDLE_INDEX});
     }
 
     [[nodiscard]] TeamNumber teamNumber() const noexcept
     {
-        return TeamNumber{hookContext.clientPatternSearchResults().template get<OffsetToTeamNumber>().of(entity).valueOr({})};
+        return TeamNumber{hookContext.patternSearchResults().template get<OffsetToTeamNumber>().of(entity).valueOr({})};
     }
 
     [[nodiscard]] auto vData() const noexcept
     {
-        return hookContext.clientPatternSearchResults().template get<OffsetToVData>().of(entity).toOptional();
+        return hookContext.patternSearchResults().template get<OffsetToVData>().of(entity).toOptional();
     }
 
     [[nodiscard]] auto health() const noexcept
     {
-        return hookContext.clientPatternSearchResults().template get<OffsetToHealth>().of(entity).toOptional();
+        return hookContext.patternSearchResults().template get<OffsetToHealth>().of(entity).toOptional();
     }
 
     [[nodiscard]] std::optional<bool> isAlive() const noexcept
     {
-        const auto lifestate = hookContext.clientPatternSearchResults().template get<OffsetToLifeState>().of(entity).get();
+        const auto lifestate = hookContext.patternSearchResults().template get<OffsetToLifeState>().of(entity).get();
         if (lifestate)
             return LifeState{*lifestate} == LifeState::Alive;
         return {};

@@ -7,26 +7,28 @@ Cross-platform (Windows, Linux) game hack for **Counter-Strike 2** with GUI and 
 
 ## What's new
 
-* 06 March 2025
-    * Settings are now automatically saved to the config file (`default.cfg`) inside `%appdata%\OsirisCS2\configs` directory on Windows and `$HOME/OsirisCS2/configs` on Linux. `default.cfg` file is loaded automatically when starting Osiris.
+* 04 November 2025
+    * Improved smoothness of "Player Info in World" on moving players
 
-* 23 January 2025
-    * Added player model glow preview to the menu
+* 30 October 2025
+    * Added Bomb Plant Alert feature
+        * Green color means the bomb will be planted before the end of the round if uninterrupted
+        * Red color means the bomb can not be planted before the end of the round
 
-    ![Player Model Glow Preview](https://github.com/user-attachments/assets/361ff865-2a0c-4145-9fd0-5ff397f50972)
+    <img width="201" height="146" alt="Bomb Plant Alert" src="https://github.com/user-attachments/assets/21c0f8fb-a20d-42df-9857-f578cfc9b9f9" />
 
-* 27 December 2024
-    * Added model glow for grenade projectiles
+* 23 October 2025
+    * Hostage Outline Glow hue is now customizable
 
-* 14 December 2024
-    * Added model glow for defuse kits on the ground
+* 20 October 2025
+    * Added "No Scope Inaccuracy Visualization" feature
 
-    ![Defuse Kit Model Glow](https://github.com/user-attachments/assets/43dc555d-8c1d-40dc-b94a-3aa8f8396c7b)
+    <img height="300" alt="no scope inaccuracy visualization" src="https://github.com/user-attachments/assets/860c944a-00b1-4b67-9d41-6f43e46f4252" />
 
-* 11 December 2024
-    * Added model glow for ticking bomb
+* 09 October 2025
+    * Added viewmodel fov modification
 
-    ![Ticking Bomb Model Glow](https://github.com/user-attachments/assets/6cadde5a-f999-4649-b483-9122e7b350ba)
+    ![Viewmodel fov modification](https://github.com/user-attachments/assets/3b9d6bde-a68c-4739-913c-d3b6caba4117)
 
 ## Technical features
 
@@ -48,7 +50,7 @@ Cross-platform (Windows, Linux) game hack for **Counter-Strike 2** with GUI and 
 #### Linux
 
 * **CMake 3.24** or newer
-* **g++ 11 or newer** or **clang++ 17 or newer**
+* **g++ 11 or newer** or **clang++ 18 or newer**
 
 ### Compiling from source
 
@@ -86,8 +88,14 @@ You can simply run the following script in the directory containing **libOsiris.
 
 However, this injection method might be detected by VAC as gdb is visible under **TracerPid** in `/proc/$(pidof cs2)/status` for the duration of the injection.
 
+## FAQ
+
+### Where are the settings stored on disk?
+
+In a configuration file `default.cfg` inside `%appdata%\OsirisCS2\configs` directory on Windows and `$HOME/OsirisCS2/configs` on Linux.
+
 ## License
 
-> Copyright (c) 2018-2024 Daniel Krupiński
+> Copyright (c) 2018-2025 Daniel Krupiński
 
 This project is licensed under the [MIT License](https://opensource.org/licenses/mit-license.php) - see the [LICENSE](https://github.com/danielkrupinski/Osiris/blob/master/LICENSE) file for details.

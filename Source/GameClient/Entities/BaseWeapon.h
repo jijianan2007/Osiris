@@ -7,6 +7,7 @@
 #include <MemoryPatterns/PatternTypes/WeaponPatternTypes.h>
 #include <MemoryPatterns/PatternTypes/WeaponVDataPatternTypes.h>
 #include "BaseEntity.h"
+#include "EntityClassifier.h"
 
 template <typename HookContext>
 class BaseWeapon {
@@ -36,15 +37,31 @@ public:
         return hookContext.template make<BaseEntity>(baseWeapon);
     }
 
+    [[nodiscard]] bool isSniperRifle() const noexcept
+    {
+        switch (baseEntity().classify().typeIndex) {
+        case EntityTypeInfo::indexOf<cs2::C_WeaponSSG08>():
+        case EntityTypeInfo::indexOf<cs2::C_WeaponAWP>():
+        case EntityTypeInfo::indexOf<cs2::C_WeaponG3SG1>():
+        case EntityTypeInfo::indexOf<cs2::C_WeaponSCAR20>(): return true;
+        default: return false;
+        }
+    }
+
+    [[nodiscard]] auto bulletInaccuracy() const noexcept
+    {
+        return inaccuracy() + spread();
+    }
+
     [[nodiscard]] auto getName() const noexcept
     {
         const auto vData = static_cast<cs2::CCSWeaponBaseVData*>(hookContext.template make<BaseEntity>(baseWeapon).vData().valueOr(nullptr));
-        return hookContext.clientPatternSearchResults().template get<OffsetToWeaponName>().of(vData).valueOr(nullptr);
+        return hookContext.patternSearchResults().template get<OffsetToWeaponName>().of(vData).valueOr(nullptr);
     }
 
     [[nodiscard]] auto clipAmmo() const noexcept
     {
-        return hookContext.clientPatternSearchResults().template get<OffsetToClipAmmo>().of(baseWeapon).toOptional();
+        return hookContext.patternSearchResults().template get<OffsetToClipAmmo>().of(baseWeapon).toOptional();
     }
 
     [[nodiscard]] auto getSceneObjectUpdater() const noexcept
@@ -59,9 +76,25 @@ public:
     }
 
 private:
+    [[nodiscard]] Optional<float> inaccuracy() const noexcept
+    {
+        const auto getInaccuracyFn = hookContext.patternSearchResults().template get<PointerToGetInaccuracyFunction>();
+        if (baseWeapon && getInaccuracyFn)
+            return getInaccuracyFn(baseWeapon, nullptr, nullptr);
+        return {};
+    }
+
+    [[nodiscard]] Optional<float> spread() const noexcept
+    {
+        const auto getSpreadFn = hookContext.patternSearchResults().template get<PointerToGetSpreadFunction>();
+        if (baseWeapon && getSpreadFn)
+            return getSpreadFn(baseWeapon);
+        return {};
+    }
+
     [[nodiscard]] auto sceneObjectUpdaterHandle() const noexcept
     {
-        return hookContext.clientPatternSearchResults().template get<OffsetToWeaponSceneObjectUpdaterHandle>().of(baseWeapon).valueOr(nullptr);
+        return hookContext.patternSearchResults().template get<OffsetToWeaponSceneObjectUpdaterHandle>().of(baseWeapon).valueOr(nullptr);
     }
 
     HookContext& hookContext;

@@ -4,41 +4,41 @@
 
 #include <CS2/Classes/Color.h>
 #include <CS2/Classes/Entities/GrenadeProjectiles.h>
-#include <GameClient/Entities/EntityClassifier.h>
 #include <Features/Visuals/OutlineGlow/OutlineGlowParams.h>
-#include "GrenadeProjectileOutlineGlowContext.h"
+#include <GameClient/Entities/EntityClassifier.h>
+#include <GameClient/Entities/SmokeGrenadeProjectile.h>
+#include <HookContext/HookContextMacros.h>
+#include <Utils/Optional.h>
 
-template <typename HookContext, typename Context = GrenadeProjectileOutlineGlowContext<HookContext>>
+template <typename HookContext>
 class GrenadeProjectileOutlineGlow {
 public:
-    template <typename... Args>
-    GrenadeProjectileOutlineGlow(Args&&... args) noexcept
-        : context{std::forward<Args>(args)...}
+    explicit GrenadeProjectileOutlineGlow(HookContext& hookContext) noexcept
+        : hookContext{hookContext}
     {
     }
 
-    void applyGlowToGrenadeProjectile(EntityTypeInfo entityTypeInfo, auto&& grenadeProjectile) const noexcept
+    [[nodiscard]] bool enabled() const noexcept
     {
-        auto&& condition = context.condition();
-        if (!condition.shouldRun() || !condition.shouldGlowGrenadeProjectile(entityTypeInfo, grenadeProjectile))
-            return;
-
-        grenadeProjectile.applyGlowRecursively(getColor(entityTypeInfo));
+        return GET_CONFIG_VAR(outline_glow_vars::GlowGrenadeProjectiles);
     }
 
-private:
-    [[nodiscard]] cs2::Color getColor(EntityTypeInfo entityTypeInfo) const noexcept
+    [[nodiscard]] bool shouldApplyGlow(EntityTypeInfo entityTypeInfo, auto&& grenadeProjectile) const noexcept
     {
-        using namespace outline_glow_params;
+        return !entityTypeInfo.is<cs2::C_SmokeGrenadeProjectile>() || !grenadeProjectile.template as<SmokeGrenadeProjectile>().didSmokeEffect().valueOr(false);
+    }
 
+    [[nodiscard]] Optional<color::HueInteger> hue(EntityTypeInfo entityTypeInfo, auto&& /* grenadeProjectile */) const noexcept
+    {
         switch (entityTypeInfo.typeIndex) {
-        case EntityTypeInfo::indexOf<cs2::C_FlashbangProjectile>(): return kFlashbangColor;
-        case EntityTypeInfo::indexOf<cs2::C_HEGrenadeProjectile>(): return kHEGrenadeColor;
-        case EntityTypeInfo::indexOf<cs2::C_MolotovProjectile>(): return kMolotovColor;
-        case EntityTypeInfo::indexOf<cs2::C_SmokeGrenadeProjectile>(): return kSmokeGrenadeColor;
-        default: return kDefaultWeaponColor;
+        case EntityTypeInfo::indexOf<cs2::C_FlashbangProjectile>(): return GET_CONFIG_VAR(outline_glow_vars::FlashbangHue);
+        case EntityTypeInfo::indexOf<cs2::C_HEGrenadeProjectile>(): return GET_CONFIG_VAR(outline_glow_vars::HEGrenadeHue);
+        case EntityTypeInfo::indexOf<cs2::C_MolotovProjectile>(): return GET_CONFIG_VAR(outline_glow_vars::MolotovHue);
+        case EntityTypeInfo::indexOf<cs2::C_SmokeGrenadeProjectile>(): return GET_CONFIG_VAR(outline_glow_vars::SmokeGrenadeHue);
+        default: return {};
         }
     }
 
-    Context context;
+private:
+    HookContext& hookContext;
 };

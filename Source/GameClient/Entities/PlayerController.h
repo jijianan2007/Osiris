@@ -38,43 +38,20 @@ public:
         return baseEntity().teamNumber();
     }
 
-    [[nodiscard]] decltype(auto) playerPawn() const noexcept
+    [[nodiscard]] decltype(auto) pawn() const noexcept
     {
-        const auto playerPawnHandle = hookContext.clientPatternSearchResults().template get<OffsetToPlayerPawnHandle>().of(playerControllerPointer).get();
+        const auto playerPawnHandle = hookContext.patternSearchResults().template get<OffsetToBasePawnHandle>().of(playerControllerPointer).get();
         if (!playerPawnHandle)
-            return hookContext.template make<PlayerPawn>(nullptr);
-        return hookContext.template make<PlayerPawn>(static_cast<cs2::C_CSPlayerPawn*>(hookContext.template make<EntitySystem>().getEntityFromHandle(*playerPawnHandle)));
-    }
-
-    [[nodiscard]] std::optional<cs2::Color> getPlayerColor() const noexcept
-    {
-        return getPlayerColor(cs2::kPlayerColors);
-    }
-
-    [[nodiscard]] std::optional<cs2::Color> getPlayerColorSaturated() const noexcept
-    {
-        return getPlayerColor(cs2::kPlayerColorsSaturated);
-    }
-
-    [[nodiscard]] std::optional<cs2::Color> getPlayerColorHalfSaturated() const noexcept
-    {
-        return getPlayerColor(cs2::kPlayerColorsHalfSaturated);
+            return hookContext.template make<BaseEntity>(nullptr);
+        return hookContext.template make<EntitySystem>().getEntityFromHandle2(*playerPawnHandle);
     }
 
     [[nodiscard]] decltype(auto) playerColorIndex() const noexcept
     {
-        return hookContext.clientPatternSearchResults().template get<OffsetToPlayerColor>().of(playerControllerPointer).toOptional();
+        return hookContext.patternSearchResults().template get<OffsetToPlayerColor>().of(playerControllerPointer).toOptional();
     }
 
 private:
-    [[nodiscard]] std::optional<cs2::Color> getPlayerColor(std::span<const cs2::Color> playerColors) const noexcept
-    {
-        const auto playerColorIndex = hookContext.clientPatternSearchResults().template get<OffsetToPlayerColor>().of(playerControllerPointer).get();
-        if (playerColorIndex && *playerColorIndex >= 0 && std::cmp_less(*playerColorIndex, playerColors.size()))
-            return playerColors[*playerColorIndex];
-        return {};
-    }
-
     HookContext& hookContext;
     cs2::CCSPlayerController* playerControllerPointer;
 };

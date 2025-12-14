@@ -4,7 +4,7 @@
 
 #include <Common/Visibility.h>
 #include <GameClient/Entities/C4.h>
-#include <GameClient/Panorama/PanoramaImagePanel.h>
+#include <GameClient/Panorama/ImagePanel.h>
 #include <Utils/CString.h>
 #include <Utils/StringBuilder.h>
 #include "PlayerActiveWeaponIconPanelContext.h"
@@ -20,7 +20,7 @@ public:
 
     void update(auto&& playerPawn, Visibility bombIconVisibility) const noexcept
     {
-        if (!context.config().template getVariable<PlayerInfoInWorldActiveWeaponIconEnabled>() || (bombIconVisibility == Visibility::Visible && playerPawn.getActiveWeapon().template is<C4>())) {
+        if (!context.config().template getVariable<player_info_vars::ActiveWeaponIconEnabled>() || (bombIconVisibility == Visibility::Visible && playerPawn.getActiveWeapon().template is<C4>())) {
             context.panel().setVisible(false);
             return;
         }
@@ -37,7 +37,7 @@ public:
         weaponIconPathBuilder.put("s2r://panorama/images/icons/equipment/", weaponName.string, ".svg");
         const auto weaponIconPath = weaponIconPathBuilder.cstring();
 
-        auto&& weaponIconImagePanel = context.panel().clientPanel().template as<PanoramaImagePanel>();
+        auto&& weaponIconImagePanel = context.panel().clientPanel().template as<ImagePanel>();
         if (shouldUpdateImagePanel(weaponIconImagePanel, weaponIconPath))
             weaponIconImagePanel.setImageSvg(weaponIconPath, 24);
     }

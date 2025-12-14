@@ -28,7 +28,7 @@ struct MemoryPatterns {
 
 constexpr auto kClientPatterns = []() consteval {
 #define ADD_PATTERNS(patterns) addPatterns([](auto patternPool) consteval { return patterns::addClientPatterns(patternPool); })
-    constexpr auto builder = PatternPoolBuilder<TempPatternPool<1500, 100>>{}
+    constexpr auto builder = PatternPoolBuilder<TempPatternPool<2000, 100>>{}
         .ADD_PATTERNS(BaseModelEntityPatterns)
         .ADD_PATTERNS(C4Patterns)
         .ADD_PATTERNS(ClientPatterns)
@@ -37,10 +37,10 @@ constexpr auto kClientPatterns = []() consteval {
         .ADD_PATTERNS(EntitySystemPatterns)
         .ADD_PATTERNS(GameRulesPatterns)
         .ADD_PATTERNS(GameSceneNodePatterns)
+        .ADD_PATTERNS(GlobalVarsPatterns)
         .ADD_PATTERNS(HostageServicesPatterns)
         .ADD_PATTERNS(GlowPropertyPatterns)
         .ADD_PATTERNS(GlowSceneObjectPatterns)
-        .ADD_PATTERNS(MapPlayerPreviewPanelPatterns)
         .ADD_PATTERNS(MemAllocPatterns)
         .ADD_PATTERNS(PanelPatterns)
         .ADD_PATTERNS(PanoramaDropDownPatterns)
@@ -51,9 +51,15 @@ constexpr auto kClientPatterns = []() consteval {
         .ADD_PATTERNS(PlantedC4Patterns)
         .ADD_PATTERNS(PlayerControllerPatterns)
         .ADD_PATTERNS(PlayerPawnPatterns)
+        .ADD_PATTERNS(PlayerResourcePatterns)
+        .ADD_PATTERNS(PortraitWorldPatterns)
         .ADD_PATTERNS(RenderComponentPatterns)
         .ADD_PATTERNS(SceneObjectUpdaterPatterns)
+        .ADD_PATTERNS(SliderPatterns)
         .ADD_PATTERNS(SmokeGrenadeProjectilePatterns)
+        .ADD_PATTERNS(TextEntryPatterns)
+        .ADD_PATTERNS(Ui3dPanelPatterns)
+        .ADD_PATTERNS(UiItem3dPanelPatterns)
         .ADD_PATTERNS(WeaponPatterns)
         .ADD_PATTERNS(WeaponServicesPatterns)
         .ADD_PATTERNS(WeaponVDataPatterns);

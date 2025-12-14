@@ -3,6 +3,7 @@
 #include <Features/Visuals/ModelGlow/ModelGlowConfigVariables.h>
 #include <Features/Visuals/ModelGlow/ModelGlowParams.h>
 #include <Features/Visuals/ModelGlow/ModelGlowState.h>
+#include <HookContext/HookContextMacros.h>
 
 template <typename HookContext>
 class DefuseKitModelGlow {
@@ -12,41 +13,23 @@ public:
     {
     }
 
-    void onEntityListTraversed() const noexcept
+    [[nodiscard]] bool enabled() const
     {
-        state().defuseKitModelGlowDisabling = false;
+        return GET_CONFIG_VAR(model_glow_vars::GlowDefuseKits);    
     }
 
-    void updateModelGlow(auto&& defuseKit) const noexcept
+    [[nodiscard]] auto deactivationFlag() const noexcept
     {
-        if (isDisabled())
-            return;
-
-        using namespace model_glow_params;
-        if (isEnabled())
-            defuseKit.baseEntity().applySpawnProtectionEffectRecursively(kDefuseKitColor);
-        else
-            defuseKit.baseEntity().removeSpawnProtectionEffectRecursively();
+        return ModelGlowDeactivationFlags::DefuseKitModelGlowDeactivating;
     }
 
-    void onUnload(auto&& defuseKit) const noexcept
+    [[nodiscard]] color::HueInteger hue() const
     {
-        if (!isDisabled())
-            defuseKit.baseEntity().removeSpawnProtectionEffectRecursively();
+        return GET_CONFIG_VAR(model_glow_vars::DefuseKitHue);
     }
 
 private:
-    [[nodiscard]] bool isDisabled() const noexcept
-    {
-        return !isEnabled() && !state().defuseKitModelGlowDisabling;
-    }
-
-    [[nodiscard]] bool isEnabled() const noexcept
-    {
-        return hookContext.config().template getVariable<ModelGlowEnabled>() && hookContext.config().template getVariable<DefuseKitModelGlowEnabled>();
-    }
-
-    [[nodiscard]] auto& state() const noexcept
+    [[nodiscard]] auto& state() const
     {
         return hookContext.featuresStates().visualFeaturesStates.modelGlowState;
     }

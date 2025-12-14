@@ -8,7 +8,7 @@
 #include <MemoryPatterns/PatternTypes/PanoramaImagePanelPatternTypes.h>
 #include <MemoryPatterns/PatternTypes/PanoramaLabelPatternTypes.h>
 #include <GameClient/Panorama/ClientPanel.h>
-#include <GameClient/Panorama/PanoramaImagePanel.h>
+#include <GameClient/Panorama/ImagePanel.h>
 
 template <typename HookContext>
 struct PanelFactory {
@@ -38,38 +38,38 @@ struct PanelFactory {
     [[nodiscard]] decltype(auto) createImagePanel(cs2::CUIPanel* parentPanel, const char* id = "") noexcept
     {
         if (!parentPanel || !imagePanelConstructor() || !imagePanelSize())
-            return hookContext.template make<ClientPanel>(nullptr).template as<PanoramaImagePanel>();
+            return hookContext.template make<ClientPanel>(nullptr).template as<ImagePanel>();
 
         const auto memory{static_cast<cs2::CImagePanel*>(hookContext.template make<MemAlloc>().allocate(imagePanelSize()))};
         if (memory)
             imagePanelConstructor()(memory, parentPanel->clientPanel, id);
-        return hookContext.template make<ClientPanel>(memory).template as<PanoramaImagePanel>();
+        return hookContext.template make<ClientPanel>(memory).template as<ImagePanel>();
     }
 
 private:
     [[nodiscard]] auto panelConstructor() const noexcept
     {
-        return hookContext.clientPatternSearchResults().template get<PanelConstructorPointer>();
+        return hookContext.patternSearchResults().template get<PanelConstructorPointer>();
     }
 
     [[nodiscard]] auto imagePanelConstructor() const noexcept
     {
-        return hookContext.clientPatternSearchResults().template get<ImagePanelConstructorPointer>();
+        return hookContext.patternSearchResults().template get<ImagePanelConstructorPointer>();
     }
 
     [[nodiscard]] auto imagePanelSize() const noexcept
     {
-        return hookContext.clientPatternSearchResults().template get<ImagePanelClassSize>();
+        return hookContext.patternSearchResults().template get<ImagePanelClassSize>();
     }
 
     [[nodiscard]] auto labelPanelConstructor() const noexcept
     {
-        return hookContext.clientPatternSearchResults().template get<LabelPanelConstructorPointer>();
+        return hookContext.patternSearchResults().template get<LabelPanelConstructorPointer>();
     }
 
     [[nodiscard]] auto labelPanelSize() const noexcept
     {
-        return hookContext.clientPatternSearchResults().template get<LabelPanelObjectSize>();
+        return hookContext.patternSearchResults().template get<LabelPanelObjectSize>();
     }
 
     HookContext& hookContext;

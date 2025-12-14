@@ -1,28 +1,34 @@
 #pragma once
 
-#include <utility>
-
+#include <Features/Visuals/OutlineGlow/OutlineGlowConfigVariables.h>
 #include <Features/Visuals/OutlineGlow/OutlineGlowParams.h>
-#include "TickingBombOutlineGlowContext.h"
+#include <GameClient/Entities/EntityClassifier.h>
+#include <HookContext/HookContextMacros.h>
+#include <Utils/ColorUtils.h>
 
-template <typename HookContext, typename Context = TickingBombOutlineGlowContext<HookContext>>
+template <typename HookContext>
 class TickingBombOutlineGlow {
 public:
-    template <typename... Args>
-    TickingBombOutlineGlow(Args&&... args) noexcept
-        : context{std::forward<Args>(args)...}
+    TickingBombOutlineGlow(HookContext& hookContext) noexcept
+        : hookContext{hookContext}
     {
     }
 
-    void applyGlowToPlantedBomb(auto&& plantedBomb) const noexcept
+    [[nodiscard]] bool enabled() const
     {
-        auto&& condition = context.condition();
-        if (!condition.shouldRun() || !condition.shouldGlowPlantedBomb(plantedBomb))
-            return;
+        return GET_CONFIG_VAR(outline_glow_vars::GlowTickingBomb);
+    }
 
-        plantedBomb.baseEntity().applyGlowRecursively(outline_glow_params::kTickingBombColor);
+    [[nodiscard]] bool shouldApplyGlow(EntityTypeInfo /* entityTypeInfo */, auto&& plantedBomb) const
+    {
+        return plantedBomb.isTicking().valueOr(true);
+    }
+
+    [[nodiscard]] color::HueInteger hue() const
+    {
+        return GET_CONFIG_VAR(outline_glow_vars::TickingBombHue);
     }
 
 private:
-    Context context;
+    HookContext& hookContext;
 };

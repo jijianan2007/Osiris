@@ -19,7 +19,7 @@ public:
 
     void update(auto&& playerPawn) const noexcept
     {
-        if (!context.config().template getVariable<PlayerInfoInWorldPlayerPositionArrowEnabled>()) {
+        if (!context.config().template getVariable<player_info_vars::PlayerPositionArrowEnabled>()) {
             context.panel().setVisible(false);
             return;
         }
@@ -34,8 +34,8 @@ public:
 private:
     [[nodiscard]] cs2::Color getArrowColor(auto&& playerPawn) const noexcept
     {
-        if (context.config().template getVariable<PlayerInfoInWorldPlayerPositionArrowColorMode>() == PlayerPositionArrowColorType::PlayerOrTeamColor) {
-            const auto playerColor = playerPawn.playerController().getPlayerColor();
+        if (context.config().template getVariable<player_info_vars::PlayerPositionArrowColorMode>() == PlayerPositionArrowColorType::PlayerOrTeamColor) {
+            const auto playerColor = getPlayerColor(playerPawn.playerController().playerColorIndex());
             if (playerColor.has_value())
                 return *playerColor;
         }
@@ -45,6 +45,22 @@ private:
             case TT: return cs2::kColorTeamTT;
             case CT: return cs2::kColorTeamCT;
             default: return cs2::kColorWhite;
+        }
+    }
+
+    [[nodiscard]] std::optional<cs2::Color> getPlayerColor(auto playerColorIndex) const noexcept
+    {
+        if (!playerColorIndex.hasValue())
+            return {};
+
+        switch (playerColorIndex.value()) {
+        using enum cs2::PlayerColorIndex;
+        case Blue: return cs2::kColorPlayerBlue;
+        case Green: return cs2::kColorPlayerGreen;
+        case Yellow: return cs2::kColorPlayerYellow;
+        case Orange: return cs2::kColorPlayerOrange;
+        case Purple: return cs2::kColorPlayerPurple;
+        default: return {};
         }
     }
 

@@ -1,7 +1,9 @@
 #pragma once
 
+#include <Features/Visuals/ModelGlow/ModelGlowConfigVariables.h>
 #include <Features/Visuals/ModelGlow/ModelGlowParams.h>
 #include <Features/Visuals/ModelGlow/ModelGlowState.h>
+#include <HookContext/HookContextMacros.h>
 
 template <typename HookContext>
 class TickingBombModelGlow {
@@ -11,44 +13,27 @@ public:
     {
     }
 
-    void onEntityListTraversed() const noexcept
+    [[nodiscard]] bool enabled() const
     {
-        state().tickingBombModelGlowDisabling = true;
+        return GET_CONFIG_VAR(model_glow_vars::GlowTickingBomb);
     }
 
-    void applyModelGlow(auto&& plantedBomb) const noexcept
+    [[nodiscard]] bool shouldApplyGlow(auto&& plantedBomb) const
     {
-        if (isDisabled())
-            return;
-
-        if (shouldGlowPlantedBombModel(plantedBomb))
-            plantedBomb.baseEntity().applySpawnProtectionEffectRecursively(model_glow_params::kTickingBombColor);
-        else
-            plantedBomb.baseEntity().removeSpawnProtectionEffectRecursively();
+        return plantedBomb.isTicking().valueOr(true);
     }
 
-    void onUnload(auto&& plantedBomb) const noexcept
+    [[nodiscard]] auto deactivationFlag() const noexcept
     {
-        if (!isDisabled())
-            plantedBomb.baseEntity().removeSpawnProtectionEffectRecursively();
+        return ModelGlowDeactivationFlags::TickingBombModelGlowDeactivating;
+    }
+
+    [[nodiscard]] color::HueInteger hue() const
+    {
+        return GET_CONFIG_VAR(model_glow_vars::TickingBombHue);
     }
 
 private:
-    [[nodiscard]] bool isDisabled() const noexcept
-    {
-        return hookContext.config().template getVariable<TickingBombModelGlowEnabled>() && !state().playerModelGlowDisabling;
-    }
-
-    [[nodiscard]] bool isEnabled() const noexcept
-    {
-        return hookContext.config().template getVariable<ModelGlowEnabled>() && hookContext.config().template getVariable<TickingBombModelGlowEnabled>();
-    }
-
-    [[nodiscard]] bool shouldGlowPlantedBombModel(auto&& plantedBomb) const noexcept
-    {
-        return isEnabled() && plantedBomb.isTicking().valueOr(true);
-    }
-
     [[nodiscard]] auto& state() const noexcept
     {
         return hookContext.featuresStates().visualFeaturesStates.modelGlowState;

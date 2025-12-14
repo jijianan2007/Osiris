@@ -1,6 +1,7 @@
 #pragma once
 
 #include <CS2/Panorama/CUIPanel.h>
+#include <Features/Visuals/PlayerInfoInWorld/PlayerInfoInWorldConfigVariables.h>
 #include <Features/Visuals/PlayerInfoInWorld/PlayerInfoPanelCacheEntry.h>
 #include <GameClient/Panorama/PanoramaUiPanel.h>
 
@@ -8,7 +9,7 @@ template <typename HookContext>
 class PlayerActiveWeaponAmmoPanelContext {
 public:
     PlayerActiveWeaponAmmoPanelContext(HookContext& hookContext, cs2::CUIPanel* panel, PlayerInfoPanelCacheEntry& cache) noexcept
-        : _hookContext{hookContext}
+        : hookContext{hookContext}
         , _panel{panel}
         , _cache{cache}
     {
@@ -16,17 +17,17 @@ public:
 
     [[nodiscard]] auto& state() const noexcept
     {
-        return _hookContext.featuresStates().visualFeaturesStates.playerInfoInWorldState;
+        return hookContext.featuresStates().visualFeaturesStates.playerInfoInWorldState;
     }
 
     [[nodiscard]] bool shouldShowOn(auto&& playerPawn) const noexcept
     {
-        return _hookContext.config().template getVariable<PlayerInfoInWorldActiveWeaponAmmoEnabled>() && playerPawn.getActiveWeapon().clipAmmo().greaterThan(-1).valueOr(true);
+        return GET_CONFIG_VAR(player_info_vars::ActiveWeaponAmmoEnabled) && playerPawn.getActiveWeapon().clipAmmo().greaterThan(-1).valueOr(true);
     }
 
     [[nodiscard]] decltype(auto) panel() const noexcept
     {
-        return _hookContext.template make<PanoramaUiPanel>(_panel);
+        return hookContext.template make<PanoramaUiPanel>(_panel);
     }
 
     [[nodiscard]] auto& cache() const noexcept
@@ -35,7 +36,7 @@ public:
     }
 
 private:
-    HookContext& _hookContext;
+    HookContext& hookContext;
     cs2::CUIPanel* _panel;
     PlayerInfoPanelCacheEntry& _cache;
 };

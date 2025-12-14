@@ -39,6 +39,11 @@ public:
         return hookContext.template make<BaseEntity>(playerPawn);
     }
 
+    [[nodiscard]] explicit operator bool() const noexcept
+    {
+        return playerPawn != nullptr;
+    }
+
     template <template <typename...> typename EntityType>
     [[nodiscard]] decltype(auto) cast() const noexcept
     {
@@ -49,7 +54,7 @@ public:
 
     [[nodiscard]] decltype(auto) weaponServices() const noexcept
     {
-        return hookContext.template make<WeaponServices>(hookContext.clientPatternSearchResults().template get<OffsetToWeaponServices>().of(playerPawn).valueOr(nullptr));
+        return hookContext.template make<WeaponServices>(hookContext.patternSearchResults().template get<OffsetToWeaponServices>().of(playerPawn).valueOr(nullptr));
     }
 
     [[nodiscard]] decltype(auto) weapons() const noexcept
@@ -69,7 +74,7 @@ public:
 
     [[nodiscard]] decltype(auto) playerController() const noexcept
     {
-        const auto playerControllerHandle = hookContext.clientPatternSearchResults().template get<OffsetToPlayerController>().of(playerPawn).get();
+        const auto playerControllerHandle = hookContext.patternSearchResults().template get<OffsetToPlayerController>().of(playerPawn).get();
         if (!playerControllerHandle)
             return hookContext.template make<PlayerController>(nullptr);
         return hookContext.template make<PlayerController>(static_cast<cs2::CCSPlayerController*>(hookContext.template make<EntitySystem>().getEntityFromHandle(*playerControllerHandle)));
@@ -80,21 +85,14 @@ public:
         return baseEntity().health();
     }
 
-    [[nodiscard]] std::optional<cs2::Color> healthColor(float saturation = 0.7f) const noexcept
-    {
-        if (const auto healthValue = health(); healthValue.hasValue())
-            return getColorOfHealthFraction(saturation, std::clamp(healthValue.value(), 0, 100) / 100.0f);
-        return {};
-    }
-
     [[nodiscard]] auto hasImmunity() const noexcept
     {
-        return hookContext.clientPatternSearchResults().template get<OffsetToPlayerPawnImmunity>().of(playerPawn).toOptional();
+        return hookContext.patternSearchResults().template get<OffsetToPlayerPawnImmunity>().of(playerPawn).toOptional();
     }
 
     [[nodiscard]] decltype(auto) absOrigin() const noexcept
     {
-        return baseEntity().gameSceneNode().absOrigin();
+        return baseEntity().absOrigin();
     }
 
     [[nodiscard]] bool isControlledByLocalPlayer() const noexcept
@@ -115,12 +113,17 @@ public:
 
     [[nodiscard]] auto isPickingUpHostage() const noexcept
     {
-        return hookContext.clientPatternSearchResults().template get<OffsetToIsPickingUpHostage>().of(playerPawn).toOptional();
+        return hookContext.patternSearchResults().template get<OffsetToIsPickingUpHostage>().of(playerPawn).toOptional();
     }
 
     [[nodiscard]] auto isDefusing() const noexcept
     {
-        return hookContext.clientPatternSearchResults().template get<OffsetToIsDefusing>().of(playerPawn).toOptional();
+        return hookContext.patternSearchResults().template get<OffsetToIsDefusing>().of(playerPawn).toOptional();
+    }
+
+    [[nodiscard]] auto isScoped() const noexcept
+    {
+        return hookContext.patternSearchResults().template get<OffsetToIsScoped>().of(playerPawn).toOptional();
     }
 
     [[nodiscard]] bool isRescuingHostage() const noexcept
@@ -143,7 +146,7 @@ public:
         const auto curTime = hookContext.globalVars().curtime();
         if (!curTime.hasValue())
             return 0.0f;
-        const auto flashBangEndTime = hookContext.clientPatternSearchResults().template get<OffsetToFlashBangEndTime>().of(playerPawn).get();
+        const auto flashBangEndTime = hookContext.patternSearchResults().template get<OffsetToFlashBangEndTime>().of(playerPawn).get();
         if (!flashBangEndTime)
             return 0.0f;
         if (*flashBangEndTime <= curTime.value())
@@ -167,28 +170,25 @@ public:
             sceneObjectUpdaterHandle()->updaterFunction = reinterpret_cast<std::uint64_t(*)(void*, void*, bool)>(x);
     }
 
+    [[nodiscard]] decltype(auto) isUsingSniperRifle() const
+    {
+        return getActiveWeapon().isSniperRifle();
+    }
+
 private:
     [[nodiscard]] auto sceneObjectUpdaterHandle() const noexcept
     {
-        return hookContext.clientPatternSearchResults().template get<OffsetToPlayerPawnSceneObjectUpdaterHandle>().of(playerPawn).valueOr(nullptr);
+        return hookContext.patternSearchResults().template get<OffsetToPlayerPawnSceneObjectUpdaterHandle>().of(playerPawn).valueOr(nullptr);
     }
 
     [[nodiscard]] decltype(auto) hostageServices() const noexcept
     {
-        return hookContext.template make<HostageServices>(hookContext.clientPatternSearchResults().template get<OffsetToHostageServices>().of(playerPawn).valueOr(nullptr));
-    }
-
-    [[nodiscard]] static cs2::Color getColorOfHealthFraction(float saturation, float healthFraction) noexcept
-    {
-        return color::HSBtoRGB(color::kRedHue + (color::kGreenHue - color::kRedHue) * healthFraction, saturation, 1.0f);
+        return hookContext.template make<HostageServices>(hookContext.patternSearchResults().template get<OffsetToHostageServices>().of(playerPawn).valueOr(nullptr));
     }
 
     [[nodiscard]] bool teammatesAreEnemies() const noexcept
     {
-        auto conVarAccessor = hookContext.getConVarAccessor();
-        if (!conVarAccessor.template requestConVar<cs2::mp_teammates_are_enemies>())
-            return true;
-        return conVarAccessor.template getConVarValue<cs2::mp_teammates_are_enemies>();
+        return hookContext.cvarSystem().template getConVarValue<cs2::mp_teammates_are_enemies>().value_or(true);
     }
 
     HookContext& hookContext;

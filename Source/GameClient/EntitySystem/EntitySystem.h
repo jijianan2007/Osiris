@@ -31,24 +31,28 @@ public:
             return entityIdentity->entity;
         return nullptr;
     }
+
+    [[nodiscard]] decltype(auto) getEntityFromHandle2(cs2::CEntityHandle handle) const noexcept
+    {
+        return hookContext.template make<BaseEntity>(static_cast<cs2::C_BaseEntity*>(getEntityFromHandle(handle)));
+    }
     
     template <typename F>
-    void forEachEntityIdentity(F&& f) const noexcept
+    void forEachNetworkableEntityIdentity(F&& f) const noexcept
     {
         const auto entityList = getEntityList();
         if (!entityList)
             return;
 
-        const auto highestEntityIndex = getHighestEntityIndex();
-        for (int i = 0; i <= highestEntityIndex.value; ++i) {
-            const auto chunkIndex = i / cs2::CConcreteEntityList::kNumberOfIdentitiesPerChunk;
+        for (auto chunkIndex = 0; chunkIndex < cs2::CConcreteEntityList::kNumberOfNetworkableEntityChunks; ++chunkIndex) {
             const auto* const chunk = entityList->chunks[chunkIndex];
             if (!chunk)
                 continue;
 
-            const auto indexInChunk = i % cs2::CConcreteEntityList::kNumberOfIdentitiesPerChunk;
-            if (const auto& entityIndentity = (*chunk)[indexInChunk]; entityIndentity.entity && entityIndentity.handle.index().value == i)
-                f(entityIndentity);
+            for (auto indexInChunk = 0; indexInChunk < cs2::CConcreteEntityList::kNumberOfIdentitiesPerChunk; ++indexInChunk) {
+                if (const auto& entityIdentity = (*chunk)[indexInChunk]; entityIdentity.entity)
+                    f(entityIdentity);
+            }
         }
     }
 
@@ -87,27 +91,19 @@ private:
 
     [[nodiscard]] cs2::CGameEntitySystem* entitySystem() const noexcept
     {
-        if (hookContext.clientPatternSearchResults().template get<EntitySystemPointer>())
-            return *hookContext.clientPatternSearchResults().template get<EntitySystemPointer>();
+        if (hookContext.patternSearchResults().template get<EntitySystemPointer>())
+            return *hookContext.patternSearchResults().template get<EntitySystemPointer>();
         return nullptr;
     }
 
     [[nodiscard]] auto getEntityList() const noexcept
     {
-        return hookContext.clientPatternSearchResults().template get<EntityListOffset>().of(entitySystem()).get();
+        return hookContext.patternSearchResults().template get<EntityListOffset>().of(entitySystem()).get();
     }
 
     [[nodiscard]] auto getEntityClasses() const noexcept
     {
-        return hookContext.clientPatternSearchResults().template get<OffsetToEntityClasses>().of(entitySystem()).get();
-    }
-
-    [[nodiscard]] auto getHighestEntityIndex() const noexcept
-    {
-        const auto highestEntityIndex = hookContext.clientPatternSearchResults().template get<HighestEntityIndexOffset>().of(entitySystem()).get();
-        if (highestEntityIndex && highestEntityIndex->isValid())
-            return *highestEntityIndex;
-        return cs2::kMaxValidEntityIndex;
+        return hookContext.patternSearchResults().template get<OffsetToEntityClasses>().of(entitySystem()).get();
     }
 
     HookContext& hookContext;

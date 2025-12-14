@@ -14,12 +14,12 @@ public:
 
     [[nodiscard]] auto roundStartTime() const noexcept
     {
-        return hookContext.clientPatternSearchResults().template get<RoundStartTimeOffset>().of(gameRules).toOptional();
+        return hookContext.patternSearchResults().template get<RoundStartTimeOffset>().of(gameRules).toOptional();
     }
 
     [[nodiscard]] auto roundRestartTime() const noexcept
     {
-        return hookContext.clientPatternSearchResults().template get<OffsetToRoundRestartTime>().of(gameRules).toOptional();
+        return hookContext.patternSearchResults().template get<OffsetToRoundRestartTime>().of(gameRules).toOptional();
     }
 
     [[nodiscard]] bool hasScheduledRoundRestart() const noexcept
@@ -32,7 +32,27 @@ public:
         return roundRestartTime() - hookContext.globalVars().curtime();
     }
 
+    [[nodiscard]] auto roundEndTime() const noexcept
+    {
+        return roundStartTime() + roundLength();
+    }
+
+    [[nodiscard]] auto isRoundOver() const
+    {
+        return roundWinStatus().notEqual(cs2::RoundWinStatus::None);
+    }
+
 private:
+    [[nodiscard]] auto roundWinStatus() const
+    {
+        return hookContext.patternSearchResults().template get<OffsetToRoundWinStatus>().of(gameRules).toOptional();
+    }
+
+    [[nodiscard]] auto roundLength() const noexcept
+    {
+        return hookContext.patternSearchResults().template get<OffsetToRoundLength>().of(gameRules).toOptional();
+    }
+
     HookContext& hookContext;
     cs2::C_CSGameRules* gameRules;
 };

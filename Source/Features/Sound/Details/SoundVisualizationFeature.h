@@ -5,6 +5,7 @@
 #include <GameClient/Panorama/PanoramaTransformations.h>
 #include <Features/Sound/Details/PlayedSound.h>
 #include <Features/Sound/Details/SoundWatcher.h>
+#include <Features/Sound/SoundVisualizationConfigVariables.h>
 #include <Features/Common/FeatureToggle.h>
 #include <GameClient/WorldToScreen/ViewToProjectionMatrix.h>
 #include <GameClient/WorldToScreen/WorldToClipSpaceConverter.h>
@@ -52,7 +53,7 @@ public:
 
             auto&& transformFactory = hookContext.panoramaTransformFactory();
             PanoramaTransformations{
-                transformFactory.scale(SoundVisualization<SoundType>::getScale(soundInClipSpace.z, ViewToProjectionMatrix{hookContext.clientPatternSearchResults().template get<ViewToProjectionMatrixPointer>()}.getFovScale())),
+                transformFactory.scale(SoundVisualization<SoundType>::getScale(soundInClipSpace.z, ViewToProjectionMatrix{hookContext}.getFovScale())),
                 transformFactory.translate(deviceCoordinates.getX(), deviceCoordinates.getY())
             }.applyTo(panel);
         });
@@ -62,17 +63,17 @@ private:
     [[nodiscard]] auto enabled() noexcept
     {
         if constexpr (std::is_same_v<SoundType, BombBeepSound>)
-            return hookContext.config().template getVariable<BombBeepSoundVisualizationEnabled>();
+            return GET_CONFIG_VAR(BombBeepSoundVisualizationEnabled);
         else if constexpr (std::is_same_v<SoundType, BombDefuseSound>)
-            return hookContext.config().template getVariable<BombBeepSoundVisualizationEnabled>();
+            return GET_CONFIG_VAR(BombBeepSoundVisualizationEnabled);
         else if constexpr (std::is_same_v<SoundType, BombPlantSound>)
-            return hookContext.config().template getVariable<BombPlantSoundVisualizationEnabled>();
+            return GET_CONFIG_VAR(BombPlantSoundVisualizationEnabled);
         else if constexpr (std::is_same_v<SoundType, FootstepSound>)
-            return hookContext.config().template getVariable<FootstepSoundVisualizationEnabled>();
+            return GET_CONFIG_VAR(FootstepSoundVisualizationEnabled);
         else if constexpr (std::is_same_v<SoundType, WeaponReloadSound>)
-            return hookContext.config().template getVariable<WeaponReloadSoundVisualizationEnabled>();
+            return GET_CONFIG_VAR(WeaponReloadSoundVisualizationEnabled);
         else if constexpr (std::is_same_v<SoundType, WeaponScopeSound>)
-            return hookContext.config().template getVariable<WeaponScopeSoundVisualizationEnabled>();
+            return GET_CONFIG_VAR(WeaponScopeSoundVisualizationEnabled);
         else
             static_assert(!std::is_same_v<SoundType, SoundType>, "Unknown type");
     }

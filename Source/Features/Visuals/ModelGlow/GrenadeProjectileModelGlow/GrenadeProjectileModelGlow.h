@@ -3,8 +3,10 @@
 #include <CS2/Classes/Color.h>
 #include <CS2/Classes/Entities/GrenadeProjectiles.h>
 #include <GameClient/Entities/EntityClassifier.h>
+#include <Features/Visuals/ModelGlow/ModelGlowConfigVariables.h>
 #include <Features/Visuals/ModelGlow/ModelGlowParams.h>
 #include <Features/Visuals/ModelGlow/ModelGlowState.h>
+#include <HookContext/HookContextMacros.h>
 
 template <typename HookContext>
 class GrenadeProjectileModelGlow {
@@ -14,55 +16,31 @@ public:
     {
     }
 
-    void onEntityListTraversed() const noexcept
+    [[nodiscard]] bool enabled() const
     {
-        state().grenadeProjectileModelGlowDisabling = false;
+        return GET_CONFIG_VAR(model_glow_vars::GlowGrenadeProjectiles);
     }
 
-    void updateModelGlow(EntityTypeInfo entityTypeInfo, auto&& grenadeProjectile) const noexcept
+    [[nodiscard]] auto deactivationFlag() const noexcept
     {
-        if (isDisabled())
-            return;
-
-        if (isEnabled())
-            grenadeProjectile.baseEntity().applySpawnProtectionEffectRecursively(getColor(entityTypeInfo));
-        else
-            grenadeProjectile.baseEntity().removeSpawnProtectionEffectRecursively();
+        return ModelGlowDeactivationFlags::GrenadeProjectileModelGlowDeactivating;
     }
 
-    void onUnload(auto&& grenadeProjectile) const noexcept
+    [[nodiscard]] Optional<color::HueInteger> hue(EntityTypeInfo entityTypeInfo) const
     {
-        if (!isDisabled())
-            grenadeProjectile.baseEntity().removeSpawnProtectionEffectRecursively();
+        switch (entityTypeInfo.typeIndex) {
+        case EntityTypeInfo::indexOf<cs2::C_FlashbangProjectile>(): return GET_CONFIG_VAR(model_glow_vars::FlashbangHue);
+        case EntityTypeInfo::indexOf<cs2::C_HEGrenadeProjectile>(): return GET_CONFIG_VAR(model_glow_vars::HEGrenadeHue);
+        case EntityTypeInfo::indexOf<cs2::C_SmokeGrenadeProjectile>(): return GET_CONFIG_VAR(model_glow_vars::SmokeGrenadeHue);
+        case EntityTypeInfo::indexOf<cs2::C_MolotovProjectile>(): return GET_CONFIG_VAR(model_glow_vars::MolotovHue);
+        default: return {};
+        }
     }
 
 private:
-    [[nodiscard]] bool isDisabled() const noexcept
-    {
-        return !hookContext.config().template getVariable<GrenadeProjectileModelGlowEnabled>() && !state().grenadeProjectileModelGlowDisabling;
-    }
-
-    [[nodiscard]] bool isEnabled() const noexcept
-    {
-        return hookContext.config().template getVariable<ModelGlowEnabled>() && hookContext.config().template getVariable<GrenadeProjectileModelGlowEnabled>();
-    }
-
-    [[nodiscard]] auto& state() const noexcept
+    [[nodiscard]] auto& state() const
     {
         return hookContext.featuresStates().visualFeaturesStates.modelGlowState;
-    }
-
-    [[nodiscard]] cs2::Color getColor(EntityTypeInfo entityTypeInfo) const noexcept
-    {
-        using namespace model_glow_params;
-
-        switch (entityTypeInfo.typeIndex) {
-        case EntityTypeInfo::indexOf<cs2::C_FlashbangProjectile>(): return kFlashbangColor;
-        case EntityTypeInfo::indexOf<cs2::C_HEGrenadeProjectile>(): return kHEGrenadeColor;
-        case EntityTypeInfo::indexOf<cs2::C_MolotovProjectile>(): return kMolotovColor;
-        case EntityTypeInfo::indexOf<cs2::C_SmokeGrenadeProjectile>(): return kSmokeGrenadeColor;
-        default: return kDefaultWeaponColor;
-        }
     }
 
     HookContext& hookContext;

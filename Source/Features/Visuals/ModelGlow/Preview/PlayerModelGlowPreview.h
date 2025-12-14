@@ -8,6 +8,7 @@
 #include <Features/Visuals/ModelGlow/Preview/PlayerModelGlowPreviewColorMode.h>
 #include <GameClient/EntitySystem/EntitySystem.h>
 
+#include "EnemyTeam.h"
 #include "PlayerPawnForModelGlowPreview.h"
 #include "PlayerModelGlowPreviewParams.h"
 
@@ -46,33 +47,45 @@ public:
         const auto previewPlayerHealth = computePreviewPlayerHealth();
         const auto previewPlayerColorIndex = computePreviewPlayerColorIndex();
         const auto colorMode = computeColorMode();
+        const auto enemyTeam = computeEnemyTeam();
 
-        state().shouldUpdatePanel = shouldUpdatePreviewPanel(colorMode, previewPlayerColorIndex, previewPlayerHealth);
+        state().shouldUpdatePanel = shouldUpdatePreviewPanel(colorMode, previewPlayerColorIndex, previewPlayerHealth, enemyTeam);
         state().previewPlayerHealth = previewPlayerHealth;
         state().colorMode = colorMode;
         state().previewPlayerColorIndex = previewPlayerColorIndex;
+        state().enemyTeam = enemyTeam;
     }
 
     void hookPreviewPlayersSceneObjectUpdaters() const noexcept
     {
-        hookContext.template make<ModelGlow>().updateSceneObjectUpdaterHook(previewPlayerTT());
-        hookContext.template make<ModelGlow>().updateSceneObjectUpdaterHook(previewPlayerCT());
+        hookContext.template make<ModelGlow>().updateInMainThread()(PlayerModelGlow{hookContext}, previewPlayerTT(), EntityTypeInfo{});
+        hookContext.template make<ModelGlow>().updateInMainThread()(PlayerModelGlow{hookContext}, previewPlayerCT(), EntityTypeInfo{});
     }
 
     void onUnload() const noexcept
     {
-        hookContext.template make<PlayerModelGlow>().onUnload(previewPlayerTT());
-        hookContext.template make<PlayerModelGlow>().onUnload(previewPlayerCT());
+        hookContext.template make<ModelGlow>().onUnload()(PlayerModelGlow{hookContext}, previewPlayerTT());
+        hookContext.template make<ModelGlow>().onUnload()(PlayerModelGlow{hookContext}, previewPlayerCT());
     }
 
     void applyPreviewPlayerModelGlow(auto&& previewPlayer) const noexcept
     {
-        hookContext.template make<ModelGlow>().applyPlayerModelGlow(hookContext.template make<PlayerPawnForModelGlowPreview>(previewPlayer, previewPlayerTeamNumber(previewPlayer)));
+        hookContext.template make<ModelGlow>().updateInSceneObjectUpdater()(PlayerModelGlow{hookContext}, hookContext.template make<PlayerPawnForModelGlowPreview>(previewPlayer, previewPlayerTeamNumber(previewPlayer)), EntityTypeInfo{});
     }
 
 private:
+    [[nodiscard]] bool previewActive() const noexcept
+    {
+        return GET_CONFIG_VAR(model_glow_vars::Enabled) && GET_CONFIG_VAR(model_glow_vars::GlowPlayers);
+    }
+
     void updateAnimationProgress() const noexcept
     {
+        if (!previewActive()) {
+            state().animationProgress = 0.0f;
+            return;
+        }
+
         constexpr auto kDefaultFrameTime{1 / 60.0f};
         const auto frameTime = hookContext.globalVars().frametime().valueOr(kDefaultFrameTime);
 
@@ -83,6 +96,23 @@ private:
             state().animationProgress = 0.0f;
     }
 
+    [[nodiscard]] auto computeEnemyTeam() const noexcept
+    {
+        if (GET_CONFIG_VAR(model_glow_vars::GlowPlayers) && GET_CONFIG_VAR(model_glow_vars::GlowOnlyEnemies))
+            return EnemyTeam::Both;
+
+        if (GET_CONFIG_VAR(model_glow_vars::PlayerGlowColorMode) == PlayerModelGlowColorType::EnemyAlly)
+            return enemyTeamAnimationStep() == 0 ? EnemyTeam::T : EnemyTeam::CT;
+
+        return EnemyTeam::None;
+    }
+
+    [[nodiscard]] int enemyTeamAnimationStep() const noexcept
+    {
+        using namespace player_model_glow_preview_params::team_animation_params;
+        return static_cast<int>(state().animationProgress / kStepDuration) % kSteps;
+    }
+
     [[nodiscard]] auto computePreviewPlayerHealth() const noexcept
     {
         return healthAnimationStepToHealthValue(healthAnimationStep());
@@ -91,25 +121,28 @@ private:
     [[nodiscard]] auto computePreviewPlayerColorIndex() const noexcept
     {
         const auto step = colorIndexAnimationStep();
-        return isPlayerColorStep(step) ? playerColorIndexFromStep(step) : -1;
+        return isPlayerColorStep(step) ? playerColorIndexFromStep(step) : cs2::PlayerColorIndex{-1};
     }
 
     [[nodiscard]] auto computeColorMode() const noexcept
     {
-        if (!hookContext.config().template getVariable<ModelGlowEnabled>() || !hookContext.config().template getVariable<PlayerModelGlowEnabled>())
+        if (!previewActive())
             return PlayerModelGlowPreviewColorMode::None;
 
-        switch (hookContext.config().template getVariable<PlayerModelGlowColorMode>()) {
+        switch (GET_CONFIG_VAR(model_glow_vars::PlayerGlowColorMode)) {
         case PlayerModelGlowColorType::HealthBased: return PlayerModelGlowPreviewColorMode::HealthBased;
         case PlayerModelGlowColorType::PlayerOrTeamColor: return PlayerModelGlowPreviewColorMode::PlayerOrTeamColor;
         case PlayerModelGlowColorType::TeamColor: return PlayerModelGlowPreviewColorMode::TeamColor;
+        case PlayerModelGlowColorType::EnemyAlly: return PlayerModelGlowPreviewColorMode::EnemyAlly;
         default: return PlayerModelGlowPreviewColorMode::None;
         }
     }
 
-    [[nodiscard]] bool shouldUpdatePreviewPanel(auto colorMode, auto previewPlayerColorIndex, auto previewPlayerHealth) const noexcept
+    [[nodiscard]] bool shouldUpdatePreviewPanel(auto colorMode, auto previewPlayerColorIndex, auto previewPlayerHealth, auto enemyTeam) const noexcept
     {
         if (colorMode != state().colorMode)
+            return true;
+        if (enemyTeam != state().enemyTeam)
             return true;
 
         switch (colorMode) {
@@ -140,10 +173,10 @@ private:
         return step >= kTeamColorSteps;
     }
 
-    [[nodiscard]] static cs2::CCSPlayerController::m_iCompTeammateColor playerColorIndexFromStep(int step) noexcept
+    [[nodiscard]] static cs2::PlayerColorIndex playerColorIndexFromStep(int step) noexcept
     {
         using namespace player_model_glow_preview_params::player_color_animation_params;
-        return step - kTeamColorSteps;
+        return cs2::PlayerColorIndex{step - kTeamColorSteps};
     }
 
     [[nodiscard]] int healthAnimationStepToHealthValue(int step) const noexcept

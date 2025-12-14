@@ -1,28 +1,34 @@
 #pragma once
 
-#include <utility>
-
-#include "DroppedBombOutlineGlowContext.h"
+#include <Features/Visuals/OutlineGlow/OutlineGlowConfigVariables.h>
 #include <Features/Visuals/OutlineGlow/OutlineGlowParams.h>
+#include <GameClient/Entities/EntityClassifier.h>
+#include <HookContext/HookContextMacros.h>
+#include <Utils/ColorUtils.h>
 
-template <typename HookContext, typename Context = DroppedBombOutlineGlowContext<HookContext>>
+template <typename HookContext>
 class DroppedBombOutlineGlow {
 public:
-    template <typename... Args>
-    DroppedBombOutlineGlow(Args&&... args) noexcept
-        : context{std::forward<Args>(args)...}
+    explicit DroppedBombOutlineGlow(HookContext& hookContext) noexcept
+        : hookContext{hookContext}
     {
     }
 
-    void applyGlowToBomb(auto&& bomb) const noexcept
+    [[nodiscard]] bool enabled() const
     {
-        auto&& condition = context.condition();
-        if (!condition.shouldRun() || !condition.shouldGlowBomb(bomb))
-            return;
+        return GET_CONFIG_VAR(outline_glow_vars::GlowDroppedBomb);
+    }
 
-        bomb.applyGlowRecursively(outline_glow_params::kDroppedBombColor);
+    [[nodiscard]] bool shouldApplyGlow(EntityTypeInfo /* entityTypeInfo */, auto&& bomb) const
+    {
+        return !bomb.hasOwner().valueOr(true);
+    }
+
+    [[nodiscard]] color::HueInteger hue() const
+    {
+        return GET_CONFIG_VAR(outline_glow_vars::DroppedBombHue);
     }
 
 private:
-    Context context;
+    HookContext& hookContext;
 };

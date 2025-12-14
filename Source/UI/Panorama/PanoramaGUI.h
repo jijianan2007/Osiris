@@ -4,19 +4,21 @@
 #include <GameClient/Entities/PreviewPlayer.h>
 #include <Features/Visuals/ModelGlow/Preview/PlayerModelGlowPreview.h>
 #include <Features/Visuals/ModelGlow/Preview/PlayerModelGlowPreviewColorMode.h>
-#include <Features/Features.h>
+#include <Features/Visuals/ModelGlow/Preview/WeaponModelGlowPreview.h>
 #include <GameClient/Entities/TeamNumber.h>
 #include <GlobalContext/UnloadFlag.h>
-#include <GameClient/Panorama/MapPlayerPreviewPanel.h>
 #include <GameClient/Panorama/PanoramaLabel.h>
 #include <GameClient/Panorama/PanoramaUiEngine.h>
 #include <GameClient/Panorama/PanoramaUiPanel.h>
+#include <GameClient/Panorama/Ui3dPanel.h>
 #include <Utils/StringBuilder.h>
 
 #include "PanoramaCommandDispatcher.h"
+#include "CombatTab.h"
 #include "HudTab.h"
 #include "SoundTab.h"
 #include "VisualsTab.h"
+#include "Tabs/VisualsTab/ViewmodelModPreviewPanel.h"
 
 template <typename HookContext>
 class PlayerModelGlowPreviewPanel {
@@ -35,11 +37,8 @@ public:
 
         StringBuilderStorage<100> storage;
         auto builder = storage.builder();
-        builder.put("Preview - Player ");
-        if (teamNumber == TeamNumber::TT)
-            builder.put("TT");
-        else
-            builder.put("CT");
+        builder.put(playerName(), ' ', teamName());
+
         if (state().colorMode == PlayerModelGlowPreviewColorMode::PlayerOrTeamColor) {
             if (const auto colorString = colorIndexToString()) {
                 builder.put(" - ");
@@ -53,6 +52,21 @@ public:
     }
 
 private:
+    [[nodiscard]] const char* playerName() const noexcept
+    {
+        switch (state().enemyTeam) {
+        case EnemyTeam::Both: return "Enemy";
+        case EnemyTeam::CT: return teamNumber == TeamNumber::CT ? "Enemy" : "Ally";
+        case EnemyTeam::T: return teamNumber == TeamNumber::TT ? "Enemy" : "Ally";
+        default: return "Player";
+        }
+    }
+
+    [[nodiscard]] const char* teamName() const noexcept
+    {
+        return teamNumber == TeamNumber::TT ? "T" : "CT";
+    }
+
     [[nodiscard]] auto& state() const noexcept
     {
         return hookContext.playerModelGlowPreviewState();
@@ -65,13 +79,13 @@ private:
 
     [[nodiscard]] const char* colorIndexToString() const noexcept
     {
-        // todo: add color index constants to cs2 namespace
         switch (state().previewPlayerColorIndex) {
-        case 0: return "Blue";
-        case 1: return "Green";
-        case 2: return "Yellow";
-        case 3: return "Orange";
-        case 4: return "Purple";
+        using enum cs2::PlayerColorIndex;
+        case Blue: return "Blue";
+        case Green: return "Green";
+        case Yellow: return "Yellow";
+        case Orange: return "Orange";
+        case Purple: return "Purple";
         default: return nullptr;
         }
     }
@@ -132,12 +146,38 @@ public:
             state().guiPanelHandle = guiPanel.getHandle();
             state().modelGlowPreviewPlayerLabelHandleTT = guiPanel.findChildInLayoutFile("ModelGlowPreviewPlayerTTLabel").getHandle();
             state().modelGlowPreviewPlayerLabelHandleCT = guiPanel.findChildInLayoutFile("ModelGlowPreviewPlayerCTLabel").getHandle();
+            state().viewmodelPreviewPanelHandle = guiPanel.findChildInLayoutFile("ViewmodelPreview").getHandle();
+
+            hookContext.template make<CombatTab>().init(guiPanel);
+            hookContext.template make<HudTab>().init(guiPanel);
+            hookContext.template make<VisualsTab>().init(guiPanel);
+            hookContext.template make<SoundTab>().init(guiPanel);
         }
 
         updateFromConfig();
     }
 
-    void run(Features<HookContext> features, UnloadFlag& unloadFlag) const noexcept
+    template <typename ConfigVariable>
+    void onHueSliderValueChanged(const char* panelId, float value) const
+    {
+        const auto newVariableValue = handleHueSlider(panelId, value, ConfigVariable::ValueType::kMin, ConfigVariable::ValueType::kMax, GET_CONFIG_VAR(ConfigVariable));
+        hookContext.config().template setVariable<ConfigVariable>(typename ConfigVariable::ValueType{newVariableValue});
+    }
+
+    template <typename ConfigVariable>
+    void onHueSliderTextEntrySubmit(const char* panelId, const char* value) const noexcept
+    {
+        const auto newVariableValue = handleHueTextEntry(panelId, value, ConfigVariable::ValueType::kMin, ConfigVariable::ValueType::kMax, GET_CONFIG_VAR(ConfigVariable));
+        hookContext.config().template setVariable<ConfigVariable>(typename ConfigVariable::ValueType{newVariableValue});
+    }
+
+    [[nodiscard]] decltype(auto) modelGlowPreviewPanel(const char* panelId) const noexcept
+    {
+        auto&& guiPanel = uiEngine().getPanelFromHandle(state().guiPanelHandle);
+        return guiPanel.findChildInLayoutFile(panelId).clientPanel().template as<Ui3dPanel>();
+    }
+
+    void run(UnloadFlag& unloadFlag) const noexcept
     {
         auto&& guiPanel = uiEngine().getPanelFromHandle(state().guiPanelHandle);
         if (!guiPanel)
@@ -145,17 +185,23 @@ public:
 
         auto&& playerModelGlowPreview = hookContext.template make<PlayerModelGlowPreview>();
         if (!playerModelGlowPreview.isPreviewPlayerSetTT())
-            playerModelGlowPreview.setPreviewPlayerTT(guiPanel.findChildInLayoutFile("ModelGlowPreviewPlayerTT").clientPanel().template as<MapPlayerPreviewPanel>().findPreviewPlayer());
+            playerModelGlowPreview.setPreviewPlayerTT(guiPanel.findChildInLayoutFile("ModelGlowPreviewPlayerTT").clientPanel().template as<Ui3dPanel>().portraitWorld().findPreviewPlayer());
         if (!playerModelGlowPreview.isPreviewPlayerSetCT())
-            playerModelGlowPreview.setPreviewPlayerCT(guiPanel.findChildInLayoutFile("ModelGlowPreviewPlayerCT").clientPanel().template as<MapPlayerPreviewPanel>().findPreviewPlayer());
+            playerModelGlowPreview.setPreviewPlayerCT(guiPanel.findChildInLayoutFile("ModelGlowPreviewPlayerCT").clientPanel().template as<Ui3dPanel>().portraitWorld().findPreviewPlayer());
 
         const auto cmdSymbol = uiEngine().makeSymbol(0, "cmd");
         const auto cmd = guiPanel.getAttributeString(cmdSymbol, "");
-        PanoramaCommandDispatcher{cmd, features, unloadFlag, hookContext}();
+        PanoramaCommandDispatcher{cmd, unloadFlag, hookContext}();
         guiPanel.setAttributeString(cmdSymbol, "");
 
-        hookContext.template make<PlayerModelGlowPreview>().hookPreviewPlayersSceneObjectUpdaters();
         hookContext.template make<PlayerModelGlowPreview>().update();
+        hookContext.template make<PlayerModelGlowPreview>().hookPreviewPlayersSceneObjectUpdaters();
+
+        hookContext.template make<WeaponModelGlowPreview>().updateSceneObjectUpdaterHooks();
+
+        auto&& viewmodelModPreviewPanel = uiEngine().getPanelFromHandle(state().viewmodelPreviewPanelHandle).clientPanel().template as<ViewmodelModPreviewPanel>();
+        viewmodelModPreviewPanel.setupPreviewModel();
+        viewmodelModPreviewPanel.setFov();
 
         hookContext.template make<PlayerModelGlowPreviewPanel>(uiEngine().getPanelFromHandle(state().modelGlowPreviewPlayerLabelHandleTT), TeamNumber::TT).update();
         hookContext.template make<PlayerModelGlowPreviewPanel>(uiEngine().getPanelFromHandle(state().modelGlowPreviewPlayerLabelHandleCT), TeamNumber::CT).update();
@@ -163,14 +209,61 @@ public:
 
     void updateFromConfig() noexcept
     {
-        const auto mainMenuPointer = hookContext.clientPatternSearchResults().template get<MainMenuPanelPointer>();
+        const auto mainMenuPointer = hookContext.patternSearchResults().template get<MainMenuPanelPointer>();
         auto&& mainMenu = hookContext.template make<ClientPanel>(mainMenuPointer ? *mainMenuPointer : nullptr).uiPanel();
+        hookContext.template make<CombatTab>().updateFromConfig(mainMenu);
         hookContext.template make<HudTab>().updateFromConfig(mainMenu);
         hookContext.template make<VisualsTab>().updateFromConfig(mainMenu);
         hookContext.template make<SoundTab>().updateFromConfig(mainMenu);
     }
 
+    void onUnload() const noexcept
+    {
+        uiEngine().deletePanelByHandle(state().guiButtonHandle);
+        uiEngine().deletePanelByHandle(state().guiPanelHandle);
+
+        if (auto&& settingsPanel = uiEngine().getPanelFromHandle(state().settingsPanelHandle))
+            uiEngine().runScript(settingsPanel, "delete $.Osiris");
+    }
+
 private:
+    [[nodiscard]] decltype(auto) getHueSlider(const char* sliderId) const noexcept
+    {
+        auto&& guiPanel = uiEngine().getPanelFromHandle(state().guiPanelHandle);
+        return hookContext.template make<HueSlider>(guiPanel.findChildInLayoutFile(sliderId));
+    }
+
+    [[nodiscard]] color::HueInteger handleHueTextEntry(const char* sliderId, const char* value, color::HueInteger min, color::HueInteger max, color::HueInteger current) const noexcept
+    {
+        auto&& hueSlider = getHueSlider(sliderId);
+        color::HueInteger::UnderlyingType hueIntegral;
+        if (!StringParser{value}.parseInt(hueIntegral) || hueIntegral < min || hueIntegral > max) {
+            hueSlider.updateTextEntry(current);
+            return current;
+        }
+
+        if (hueIntegral == current)
+            return current;
+
+        const color::HueInteger hue{hueIntegral};
+        hueSlider.updateSlider(hue);
+        hueSlider.updateColorPreview(hue);
+        return hue;
+    }
+
+    [[nodiscard]] color::HueInteger handleHueSlider(const char* sliderId, float value, color::HueInteger min, color::HueInteger max, color::HueInteger current) const noexcept
+    {
+        const auto hueIntegral = static_cast<color::HueInteger::UnderlyingType>(value);
+        if (hueIntegral < min || hueIntegral > max || hueIntegral == current)
+            return current;
+
+        const auto hue = color::HueInteger{hueIntegral};
+        auto&& hueSlider = getHueSlider(sliderId);
+        hueSlider.updateTextEntry(hue);
+        hueSlider.updateColorPreview(hue);
+        return hue;
+    }
+
     [[nodiscard]] decltype(auto) uiEngine() const noexcept
     {
         return hookContext.template make<PanoramaUiEngine>();

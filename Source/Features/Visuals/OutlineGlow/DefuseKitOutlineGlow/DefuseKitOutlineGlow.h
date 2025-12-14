@@ -1,9 +1,9 @@
 #pragma once
 
-#include <utility>
-
-#include "DefuseKitOutlineGlowContext.h"
+#include <Features/Visuals/OutlineGlow/OutlineGlowConfigVariables.h>
 #include <Features/Visuals/OutlineGlow/OutlineGlowParams.h>
+#include <HookContext/HookContextMacros.h>
+#include <Utils/ColorUtils.h>
 
 template <typename HookContext>
 class DefuseKitOutlineGlow {
@@ -12,13 +12,20 @@ public:
         : hookContext{hookContext}
     {
     }
-    
-    void applyGlowToDefuseKit(auto&& defuseKit) const noexcept
+
+    [[nodiscard]] bool enabled() const
     {
-        if (hookContext.config().template getVariable<DefuseKitOutlineGlowEnabled>()) {
-            using namespace outline_glow_params;
-            defuseKit.applyGlowRecursively(kDefuseKitColor, kDefuseKitGlowRange);
-        }
+        return GET_CONFIG_VAR(outline_glow_vars::GlowDefuseKits);
+    }
+
+    [[nodiscard]] color::HueInteger hue() const
+    {
+        return GET_CONFIG_VAR(outline_glow_vars::DefuseKitHue);
+    }
+
+    [[nodiscard]] int getGlowRange() const noexcept
+    {
+        return outline_glow_params::kDefuseKitGlowRange;
     }
 
 private:

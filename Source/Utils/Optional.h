@@ -42,6 +42,14 @@ public:
         return defaultValue;
     }
 
+    template <typename F>
+    [[nodiscard]] auto transform(F&& f) const -> Optional<decltype(f(value()))>
+    {
+        if (hasValue())
+            return f(value());
+        return {};
+    }
+
 private:
     enum class Value : std::uint8_t {
         Unknown,
@@ -57,9 +65,14 @@ class Optional {
 public:
     Optional() = default;
 
+    Optional(std::nullopt_t) noexcept
+        : optional{std::nullopt}
+    {
+    }
+
     template <typename U>
         requires std::is_constructible_v<std::optional<T>, U&&>
-    Optional(U&& value) noexcept
+    explicit(!std::is_convertible_v<U, T>) Optional(U&& value) noexcept
         : optional{std::forward<U>(value)}
     {
     }
@@ -112,6 +125,22 @@ public:
         return compare(other, std::less_equal{});
     }
 
+    template <typename F>
+    [[nodiscard]] auto transform(F&& f) const -> Optional<decltype(f(value()))>
+    {
+        if (hasValue())
+            return f(value());
+        return {};
+    }
+
+    template <typename F>
+    [[nodiscard]] auto andThen(F&& f) const -> decltype(f(value()))
+    {
+        if (hasValue())
+            return f(value());
+        return {};
+    }
+
 private:
     template <typename U, typename Comparator>
     [[nodiscard]] Optional<bool> compare(const U& value, Comparator comparator) const noexcept
@@ -131,6 +160,22 @@ private:
 
     std::optional<T> optional;
 };
+
+template <typename T, typename U>
+[[nodiscard]] auto operator+(const Optional<T>& lhs, const Optional<U>& rhs) noexcept -> Optional<decltype(lhs.value() + rhs.value())> 
+{
+    if (lhs.hasValue() && rhs.hasValue())
+        return lhs.value() + rhs.value();
+    return {};
+}
+
+template <typename T, typename U>
+[[nodiscard]] auto operator+(const Optional<T>& optional, const U& value) noexcept -> Optional<decltype(optional.value() + value)>
+{
+    if (optional.hasValue())
+        return optional.value() + value;
+    return {};
+}
 
 template <typename T, typename U>
 [[nodiscard]] auto operator-(const Optional<T>& lhs, const Optional<U>& rhs) noexcept -> Optional<decltype(lhs.value() - rhs.value())> 

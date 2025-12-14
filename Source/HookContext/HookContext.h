@@ -1,13 +1,14 @@
 #pragma once
 
+#include <CS2/Classes/CCvar.h>
 #include <Config/Config.h>
 #include <GameClient/Entities/GameRules.h>
 #include <GameClient/Entities/PlantedC4.h>
 #include <GameClient/Entities/PlayerController.h>
 #include <Features/Common/InWorldPanelsPerHookState.h>
 #include <Features/Visuals/PlayerInfoInWorld/PlayerInfoPanelCachePerHookState.h>
-#include <GameClient/ConVars/ConVarAccessor.h>
-#include <GameClient/ConVars/ConVarFinder.h>
+#include <GameClient/ConVars/CvarSystem.h>
+#include <GameClient/Entities/PlayerResource.h>
 #include <GameClient/FileSystem.h>
 #include <GameClient/Hud/Hud.h>
 #include <GameClient/Hud/HudContext.h>
@@ -26,11 +27,26 @@ struct GlowSceneObjectsState;
 struct Hooks;
 class EntityClassifier;
 
-template <typename FullGlobalContext>
+template <typename GlobalContext>
 struct HookContext {
-    HookContext(FullGlobalContext& fullGlobalContext) noexcept
-        : fullGlobalContext{fullGlobalContext}
+    HookContext() noexcept
+        : fullGlobalContext{GlobalContext::instance().fullContext()}
     {
+    }
+
+    [[nodiscard]] static bool isGlobalContextComplete() noexcept
+    {
+        return GlobalContext::instance().isComplete();
+    }
+
+    static void initCompleteGlobalContextFromGameThread() noexcept
+    {
+        GlobalContext::instance().initCompleteContextFromGameThread();
+    }
+
+    static void destroyGlobalContext() noexcept
+    {
+        GlobalContext::destroyInstance();
     }
 
     [[nodiscard]] SoundWatcherState& soundWatcherState() const noexcept
@@ -73,11 +89,6 @@ struct HookContext {
         return fullGlobalContext.featuresStates;
     }
 
-    [[nodiscard]] auto features() const noexcept
-    {
-        return Features{fullGlobalContext.featuresStates, fullGlobalContext.hooks, *this};
-    }
-
     [[nodiscard]] GlowSceneObjectsState& glowSceneObjectsState() const noexcept
     {
         return fullGlobalContext.glowSceneObjectsState;
@@ -93,6 +104,11 @@ struct HookContext {
         return fullGlobalContext.playerModelGlowPreviewState;
     }
 
+    [[nodiscard]] auto& weaponModelGlowPreviewState() const noexcept
+    {
+        return fullGlobalContext.weaponModelGlowPreviewState;
+    }
+
     [[nodiscard]] Hooks& hooks() const noexcept
     {
         return fullGlobalContext.hooks;
@@ -105,22 +121,22 @@ struct HookContext {
 
     [[nodiscard]] auto localPlayerController() noexcept
     {
-        if (fullGlobalContext.clientPatternSearchResults.template get<LocalPlayerControllerPointer>())
-            return PlayerController{*this, *fullGlobalContext.clientPatternSearchResults.template get<LocalPlayerControllerPointer>()};
+        if (fullGlobalContext.patternSearchResults.template get<LocalPlayerControllerPointer>())
+            return PlayerController{*this, *fullGlobalContext.patternSearchResults.template get<LocalPlayerControllerPointer>()};
         return PlayerController{*this, nullptr};
     }
 
-    [[nodiscard]] GlobalVars globalVars() noexcept
+    [[nodiscard]] auto globalVars() noexcept
     {
-        if (fullGlobalContext.clientPatternSearchResults.template get<GlobalVarsPointer>())
-            return GlobalVars{*fullGlobalContext.clientPatternSearchResults.template get<GlobalVarsPointer>()};
-        return GlobalVars{nullptr};
+        if (fullGlobalContext.patternSearchResults.template get<GlobalVarsPointer>())
+            return GlobalVars{*this, *fullGlobalContext.patternSearchResults.template get<GlobalVarsPointer>()};
+        return GlobalVars{*this, nullptr};
     }
 
     [[nodiscard]] auto gameRules() noexcept
     {
-        if (fullGlobalContext.clientPatternSearchResults.template get<GameRulesPointer>())
-            return GameRules{*this, *fullGlobalContext.clientPatternSearchResults.template get<GameRulesPointer>()};
+        if (fullGlobalContext.patternSearchResults.template get<GameRulesPointer>())
+            return GameRules{*this, *fullGlobalContext.patternSearchResults.template get<GameRulesPointer>()};
         return GameRules{*this, nullptr};
     }
 
@@ -129,15 +145,16 @@ struct HookContext {
         return std::optional{make<PlantedC4<HookContext>>(getPlantedC4())};
     }
 
-    [[nodiscard]] auto getConVarAccessor() noexcept
+    [[nodiscard]] auto cvarSystem() noexcept
     {
-        if (!fullGlobalContext.conVars.has_value()) {
-            const auto cvar = fullGlobalContext.clientPatternSearchResults.template get<CvarPointer>();
-            if (cvar && *cvar && fullGlobalContext.tier0PatternSearchResults.template get<OffsetToConVarList>()) {
-                fullGlobalContext.conVars.emplace(ConVarFinder{*fullGlobalContext.tier0PatternSearchResults.template get<OffsetToConVarList>().of(*cvar).get()});
-            }
-        }
-        return ConVarAccessor{*this, *fullGlobalContext.conVars, conVarAccessorState};
+        return CvarSystem{*this};
+    }
+
+    [[nodiscard]] const auto& getConVarsBase() noexcept
+    {
+        if (!fullGlobalContext.conVars.has_value())
+            fullGlobalContext.conVars.emplace(CvarSystem{*this});
+        return *fullGlobalContext.conVars;
     }
 
     template <typename T, typename... Args>
@@ -159,7 +176,7 @@ struct HookContext {
 
     [[nodiscard]] auto panoramaTransformFactory() noexcept
     {
-        return PanoramaTransformFactory{*this, fullGlobalContext.clientPatternSearchResults.template get<TransformTranslate3dVMT>(), fullGlobalContext.clientPatternSearchResults.template get<TransformScale3dVMT>()};
+        return PanoramaTransformFactory{*this, fullGlobalContext.patternSearchResults.template get<TransformTranslate3dVMT>(), fullGlobalContext.patternSearchResults.template get<TransformScale3dVMT>()};
     }
 
     [[nodiscard]] const auto& panoramaSymbols() noexcept
@@ -170,34 +187,9 @@ struct HookContext {
         return *symbols;
     }
 
-    [[nodiscard]] const auto& clientPatternSearchResults() noexcept
+    [[nodiscard]] const auto& patternSearchResults() noexcept
     {
-        return fullGlobalContext.clientPatternSearchResults;
-    }
-
-    [[nodiscard]] const auto& sceneSystemPatternSearchResults() noexcept
-    {
-        return fullGlobalContext.sceneSystemPatternSearchResults;
-    }
-
-    [[nodiscard]] const auto& tier0PatternSearchResults() noexcept
-    {
-        return fullGlobalContext.tier0PatternSearchResults;
-    }
-
-    [[nodiscard]] const auto& fileSystemPatternSearchResults() noexcept
-    {
-        return fullGlobalContext.fileSystemPatternSearchResults;
-    }
-
-    [[nodiscard]] const auto& soundSystemPatternSearchResults() noexcept
-    {
-        return fullGlobalContext.soundSystemPatternSearchResults;
-    }
-
-    [[nodiscard]] const auto& panoramaPatternSearchResults() noexcept
-    {
-        return fullGlobalContext.panoramaPatternSearchResults;
+        return fullGlobalContext.patternSearchResults;
     }
 
     [[nodiscard]] auto& hudState() noexcept
@@ -250,17 +242,38 @@ struct HookContext {
         return SoundWatcher<HookContext>{fullGlobalContext.soundWatcherState, *this};
     }
 
+    [[nodiscard]] auto uiPanel(cs2::CUIPanel* panel) noexcept
+    {
+        return PanoramaUiPanel<HookContext>{*this, panel};
+    }
+
+    [[nodiscard]] decltype(auto) activeLocalPlayerPawn() noexcept
+    {
+        return localPlayerController().pawn().template cast<PlayerPawn>();
+    }
+
+    [[nodiscard]] decltype(auto) localPlayerBulletInaccuracy() noexcept
+    {
+        return activeLocalPlayerPawn().getActiveWeapon().bulletInaccuracy();
+    }
+
+    [[nodiscard]] decltype(auto) playerResource()
+    {
+        if (fullGlobalContext.patternSearchResults.template get<PointerToPlayerResource>())
+            return PlayerResource{*this, *fullGlobalContext.patternSearchResults.template get<PointerToPlayerResource>()};
+        return PlayerResource{*this, nullptr};
+    }
+
 private:
     [[nodiscard]] cs2::CPlantedC4* getPlantedC4() const noexcept
     {
-        const auto* const plantedC4s = fullGlobalContext.clientPatternSearchResults.template get<PlantedC4sPointer>();
+        const auto* const plantedC4s = fullGlobalContext.patternSearchResults.template get<PlantedC4sPointer>();
         if (plantedC4s && plantedC4s->size > 0)
             return plantedC4s->memory[0];
         return nullptr;
     }
 
-    FullGlobalContext& fullGlobalContext;
-    ConVarAccessorState conVarAccessorState;
+    GlobalContext::Complete& fullGlobalContext;
     InWorldPanelsPerHookState _inWorldPanelsPerHookState;
     PlayerInfoPanelCachePerHookState _playerInfoPanelCachePerHookState;
 };

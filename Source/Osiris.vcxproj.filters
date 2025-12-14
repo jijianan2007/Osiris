@@ -223,6 +223,36 @@
     <Filter Include="Config">
       <UniqueIdentifier>{5526912e-3dfb-467b-a785-3785aea27537}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UI\Panorama\Tabs">
+      <UniqueIdentifier>{6429d97e-346b-4c1e-9e55-6cd200fbf6fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Panorama\Tabs\VisualsTab">
+      <UniqueIdentifier>{1ee66c40-65ad-4c05-8631-2f3aa7159640}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Features\Visuals\ViewmodelMod">
+      <UniqueIdentifier>{63f981c9-ffe5-426e-8a58-569a43712e91}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Features\Combat">
+      <UniqueIdentifier>{a7e69fbf-3ca6-470a-abde-6380959510c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Features\Combat\SniperRifles">
+      <UniqueIdentifier>{4abe2bc9-1abb-4667-8119-82968a9df3d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Features\Combat\SniperRifles\NoScopeInaccuracyVis">
+      <UniqueIdentifier>{41ddf56e-4385-4ce4-9df4-99654e07fac9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CS2\Econ">
+      <UniqueIdentifier>{d789bb17-c27a-4136-aee2-4543b073ba4e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameClient\Econ">
+      <UniqueIdentifier>{35bace02-0818-4944-bcb2-9e49c247e922}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Features\Hud\BombPlantAlert">
+      <UniqueIdentifier>{93348815-91fe-4209-910f-aba93d67345a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EntryPoints">
+      <UniqueIdentifier>{95ddae8d-0dcc-4c4c-a44b-04135f59fdc5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CS2\Classes\C_CSGameRules.h">
@@ -246,9 +276,6 @@
     <ClInclude Include="CS2\Classes\GlobalVars.h">
       <Filter>CS2\Classes</Filter>
     </ClInclude>
-    <ClInclude Include="CS2\Constants\BombSiteIndex.h">
-      <Filter>CS2\Constants</Filter>
-    </ClInclude>
     <ClInclude Include="CS2\Constants\DllNames.h">
       <Filter>CS2\Constants</Filter>
     </ClInclude>
@@ -257,12 +284,6 @@
     </ClInclude>
     <ClInclude Include="CS2\Constants\PanelIDs.h">
       <Filter>CS2\Constants</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Features.h">
-      <Filter>Features</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Visuals\VisualFeatures.h">
-      <Filter>Features\Visuals</Filter>
     </ClInclude>
     <ClInclude Include="Hooks\PeepEventsHook.h">
       <Filter>Hooks</Filter>
@@ -432,7 +453,6 @@
     <ClInclude Include="Vmt\VmtSwapper.h">
       <Filter>Vmt</Filter>
     </ClInclude>
-    <ClInclude Include="Endpoints.h" />
     <ClInclude Include="Platform\Macros\IsCompiler.h">
       <Filter>Platform\Macros</Filter>
     </ClInclude>
@@ -585,9 +605,6 @@
       <Filter>GlobalContext</Filter>
     </ClInclude>
     <ClInclude Include="GlobalContext\PartialGlobalContext.h">
-      <Filter>GlobalContext</Filter>
-    </ClInclude>
-    <ClInclude Include="GlobalContext\PeepEventsHookResult.h">
       <Filter>GlobalContext</Filter>
     </ClInclude>
     <ClInclude Include="Features\FeaturesStates.h">
@@ -848,18 +865,6 @@
     <ClInclude Include="MemoryAllocation\MemoryAllocatorBaseImpl.h">
       <Filter>MemoryAllocation</Filter>
     </ClInclude>
-    <ClInclude Include="Features\FeaturesUnloadHandler.h">
-      <Filter>Features</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Hud\BombTimer\BombTimerUnloadHandler.h">
-      <Filter>Features\Hud\BombTimer</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Hud\DefusingAlert\DefusingAlertUnloadHandler.h">
-      <Filter>Features\Hud\DefusingAlert</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Hud\HudFeaturesUnloadHandler.h">
-      <Filter>Features\Hud</Filter>
-    </ClInclude>
     <ClInclude Include="Utils\Lvalue.h">
       <Filter>Utils</Filter>
     </ClInclude>
@@ -882,9 +887,6 @@
       <Filter>Features\Hud\PostRoundTimer</Filter>
     </ClInclude>
     <ClInclude Include="Features\Hud\PostRoundTimer\PostRoundTimerState.h">
-      <Filter>Features\Hud\PostRoundTimer</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Hud\PostRoundTimer\PostRoundTimerUnloadHandler.h">
       <Filter>Features\Hud\PostRoundTimer</Filter>
     </ClInclude>
     <ClInclude Include="CS2\Panorama\CImagePanel.h">
@@ -938,9 +940,6 @@
     <ClInclude Include="UI\Panorama\PanoramaGuiState.h">
       <Filter>UI\Panorama</Filter>
     </ClInclude>
-    <ClInclude Include="UI\Panorama\PanoramaGuiUnloadHandler.h">
-      <Filter>UI\Panorama</Filter>
-    </ClInclude>
     <ClInclude Include="OutlineGlow\GlowSceneObject.h">
       <Filter>OutlineGlow</Filter>
     </ClInclude>
@@ -989,28 +988,13 @@
     <ClInclude Include="Features\Visuals\OutlineGlow\OutlineGlow.h">
       <Filter>Features\Visuals\OutlineGlow</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Visuals\OutlineGlow\OutlineGlowContext.h">
-      <Filter>Features\Visuals\OutlineGlow</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Visuals\OutlineGlow\OutlineGlowUnloadHandler.h">
-      <Filter>Features\Visuals\OutlineGlow</Filter>
-    </ClInclude>
     <ClInclude Include="Features\Visuals\OutlineGlow\WeaponOutlineGlow\WeaponOutlineGlow.h">
-      <Filter>Features\Visuals\OutlineGlow\WeaponOutlineGlow</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Visuals\OutlineGlow\WeaponOutlineGlow\WeaponOutlineGlowCondition.h">
-      <Filter>Features\Visuals\OutlineGlow\WeaponOutlineGlow</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Visuals\OutlineGlow\WeaponOutlineGlow\WeaponOutlineGlowContext.h">
       <Filter>Features\Visuals\OutlineGlow\WeaponOutlineGlow</Filter>
     </ClInclude>
     <ClInclude Include="Features\Visuals\OutlineGlow\PlayerOutlineGlow\PlayerOutlineGlow.h">
       <Filter>Features\Visuals\OutlineGlow\PlayerOutlineGlow</Filter>
     </ClInclude>
     <ClInclude Include="Features\Visuals\OutlineGlow\PlayerOutlineGlow\PlayerOutlineGlowColorType.h">
-      <Filter>Features\Visuals\OutlineGlow\PlayerOutlineGlow</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Visuals\OutlineGlow\PlayerOutlineGlow\PlayerOutlineGlowToggle.h">
       <Filter>Features\Visuals\OutlineGlow\PlayerOutlineGlow</Filter>
     </ClInclude>
     <ClInclude Include="CS2\Classes\Entities\WeaponEntities.h">
@@ -1022,17 +1006,11 @@
     <ClInclude Include="Features\Visuals\OutlineGlow\DefuseKitOutlineGlow\DefuseKitOutlineGlow.h">
       <Filter>Features\Visuals\OutlineGlow\DefuseKitOutlineGlow</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Visuals\OutlineGlow\DefuseKitOutlineGlow\DefuseKitOutlineGlowContext.h">
-      <Filter>Features\Visuals\OutlineGlow\DefuseKitOutlineGlow</Filter>
-    </ClInclude>
     <ClInclude Include="CS2\Classes\Entities\C_BaseCSGrenadeProjectile.h">
       <Filter>CS2\Classes\Entities</Filter>
     </ClInclude>
     <ClInclude Include="CS2\Classes\Entities\GrenadeProjectiles.h">
       <Filter>CS2\Classes\Entities</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Visuals\OutlineGlow\GrenadeProjectileOutlineGlow\GrenadeProjectileOutlineGlowContext.h">
-      <Filter>Features\Visuals\OutlineGlow\GrenadeProjectileOutlineGlow</Filter>
     </ClInclude>
     <ClInclude Include="Features\Visuals\OutlineGlow\GrenadeProjectileOutlineGlow\GrenadeProjectileOutlineGlow.h">
       <Filter>Features\Visuals\OutlineGlow\GrenadeProjectileOutlineGlow</Filter>
@@ -1040,16 +1018,7 @@
     <ClInclude Include="MemoryPatterns\Windows\SmokeGrenadeProjectilePatternsWindows.h">
       <Filter>MemoryPatterns\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Visuals\OutlineGlow\GrenadeProjectileOutlineGlow\GrenadeProjectileOutlineGlowCondition.h">
-      <Filter>Features\Visuals\OutlineGlow\GrenadeProjectileOutlineGlow</Filter>
-    </ClInclude>
     <ClInclude Include="Features\Visuals\OutlineGlow\DroppedBombOutlineGlow\DroppedBombOutlineGlow.h">
-      <Filter>Features\Visuals\OutlineGlow\DroppedBombOutlineGlow</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Visuals\OutlineGlow\DroppedBombOutlineGlow\DroppedBombOutlineGlowCondition.h">
-      <Filter>Features\Visuals\OutlineGlow\DroppedBombOutlineGlow</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Visuals\OutlineGlow\DroppedBombOutlineGlow\DroppedBombOutlineGlowContext.h">
       <Filter>Features\Visuals\OutlineGlow\DroppedBombOutlineGlow</Filter>
     </ClInclude>
     <ClInclude Include="Utils\TypedStaticStringPool.h">
@@ -1064,16 +1033,7 @@
     <ClInclude Include="Features\Visuals\OutlineGlow\TickingBombOutlineGlow\TickingBombOutlineGlow.h">
       <Filter>Features\Visuals\OutlineGlow\TickingBombOutlineGlow</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Visuals\OutlineGlow\TickingBombOutlineGlow\TickingBombOutlineGlowCondition.h">
-      <Filter>Features\Visuals\OutlineGlow\TickingBombOutlineGlow</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Visuals\OutlineGlow\TickingBombOutlineGlow\TickingBombOutlineGlowContext.h">
-      <Filter>Features\Visuals\OutlineGlow\TickingBombOutlineGlow</Filter>
-    </ClInclude>
     <ClInclude Include="Features\Visuals\OutlineGlow\HostageOutlineGlow\HostageOutlineGlow.h">
-      <Filter>Features\Visuals\OutlineGlow\HostageOutlineGlow</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Visuals\OutlineGlow\HostageOutlineGlow\HostageOutlineGlowContext.h">
       <Filter>Features\Visuals\OutlineGlow\HostageOutlineGlow</Filter>
     </ClInclude>
     <ClInclude Include="CS2\Classes\Entities\C_Hostage.h">
@@ -1328,9 +1288,6 @@
     <ClInclude Include="Features\Visuals\ModelGlow\ModelGlowState.h">
       <Filter>Features\Visuals\ModelGlow</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Visuals\ModelGlow\ModelGlowToggle.h">
-      <Filter>Features\Visuals\ModelGlow</Filter>
-    </ClInclude>
     <ClInclude Include="MemoryPatterns\Windows\SceneObjectPatternsWindows.h">
       <Filter>MemoryPatterns\Windows</Filter>
     </ClInclude>
@@ -1356,9 +1313,6 @@
       <Filter>Features\Common</Filter>
     </ClInclude>
     <ClInclude Include="Features\Common\InWorldPanelsState.h">
-      <Filter>Features\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Common\InWorldPanelsUnloadHandler.h">
       <Filter>Features\Common</Filter>
     </ClInclude>
     <ClInclude Include="Features\Sound\SoundVisualizationPanelTypes.h">
@@ -1424,9 +1378,6 @@
     <ClInclude Include="CS2\Classes\Entities\C_CSGO_PreviewPlayer.h">
       <Filter>CS2\Classes\Entities</Filter>
     </ClInclude>
-    <ClInclude Include="CS2\Panorama\CUI_MapPlayerPreviewPanel.h">
-      <Filter>CS2\Panorama</Filter>
-    </ClInclude>
     <ClInclude Include="Features\Visuals\ModelGlow\Preview\BaseEntityForModelGlowPreview.h">
       <Filter>Features\Visuals\ModelGlow\Preview</Filter>
     </ClInclude>
@@ -1448,10 +1399,7 @@
     <ClInclude Include="Features\Visuals\ModelGlow\Preview\PlayerPawnForModelGlowPreview.h">
       <Filter>Features\Visuals\ModelGlow\Preview</Filter>
     </ClInclude>
-    <ClInclude Include="MemoryPatterns\PatternTypes\MapPlayerPreviewPanelPatternTypes.h">
-      <Filter>MemoryPatterns\PatternTypes</Filter>
-    </ClInclude>
-    <ClInclude Include="MemoryPatterns\Windows\MapPlayerPreviewPanelPatternsWindows.h">
+    <ClInclude Include="MemoryPatterns\Windows\PortraitWorldPatternsWindows.h">
       <Filter>MemoryPatterns\Windows</Filter>
     </ClInclude>
     <ClInclude Include="GlobalContext\UnloadFlag.h">
@@ -1492,15 +1440,6 @@
     </ClInclude>
     <ClInclude Include="Utils\FileSlice.h">
       <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="GameClient\ConVars\ConVarAccessor.h">
-      <Filter>GameClient\ConVars</Filter>
-    </ClInclude>
-    <ClInclude Include="GameClient\ConVars\ConVarFinder.h">
-      <Filter>GameClient\ConVars</Filter>
-    </ClInclude>
-    <ClInclude Include="GameClient\ConVars\ConVars.h">
-      <Filter>GameClient\ConVars</Filter>
     </ClInclude>
     <ClInclude Include="GameClient\ConVars\ConVarsBase.h">
       <Filter>GameClient\ConVars</Filter>
@@ -1595,13 +1534,7 @@
     <ClInclude Include="GameClient\Hud\BombStatus\BombStatusPanelState.h">
       <Filter>GameClient\Hud\BombStatus</Filter>
     </ClInclude>
-    <ClInclude Include="GameClient\Hud\BombStatus\BombStatusPanelUnloadHandler.h">
-      <Filter>GameClient\Hud\BombStatus</Filter>
-    </ClInclude>
     <ClInclude Include="GameClient\Panorama\ClientPanel.h">
-      <Filter>GameClient\Panorama</Filter>
-    </ClInclude>
-    <ClInclude Include="GameClient\Panorama\MapPlayerPreviewPanel.h">
       <Filter>GameClient\Panorama</Filter>
     </ClInclude>
     <ClInclude Include="GameClient\Panorama\PanelAlignmentParams.h">
@@ -1628,12 +1561,6 @@
     <ClInclude Include="GameClient\Panorama\PanoramaDropDown.h">
       <Filter>GameClient\Panorama</Filter>
     </ClInclude>
-    <ClInclude Include="GameClient\Panorama\PanoramaImagePanel.h">
-      <Filter>GameClient\Panorama</Filter>
-    </ClInclude>
-    <ClInclude Include="GameClient\Panorama\PanoramaImagePanelContext.h">
-      <Filter>GameClient\Panorama</Filter>
-    </ClInclude>
     <ClInclude Include="GameClient\Panorama\PanoramaLabel.h">
       <Filter>GameClient\Panorama</Filter>
     </ClInclude>
@@ -1656,9 +1583,6 @@
       <Filter>GameClient\Panorama</Filter>
     </ClInclude>
     <ClInclude Include="GameClient\Panorama\PanoramaUiPanelClasses.h">
-      <Filter>GameClient\Panorama</Filter>
-    </ClInclude>
-    <ClInclude Include="GameClient\Panorama\PanoramaUiPanelContext.h">
       <Filter>GameClient\Panorama</Filter>
     </ClInclude>
     <ClInclude Include="GameClient\Panorama\PanoramaUiPanelIterator.h">
@@ -1808,6 +1732,243 @@
     <ClInclude Include="Features\Visuals\OutlineGlow\OutlineGlowConfigVariables.h">
       <Filter>Features\Visuals\OutlineGlow</Filter>
     </ClInclude>
+    <ClInclude Include="Features\Visuals\ModelGlow\Preview\WeaponModelGlowPreview.h">
+      <Filter>Features\Visuals\ModelGlow\Preview</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Visuals\ModelGlow\Preview\WeaponModelGlowPreviewState.h">
+      <Filter>Features\Visuals\ModelGlow\Preview</Filter>
+    </ClInclude>
+    <ClInclude Include="GameClient\Panorama\Ui3dPanel.h">
+      <Filter>GameClient\Panorama</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Visuals\ModelGlow\Preview\EnemyTeam.h">
+      <Filter>Features\Visuals\ModelGlow\Preview</Filter>
+    </ClInclude>
+    <ClInclude Include="CS2\Panorama\CSlider.h">
+      <Filter>CS2\Panorama</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryPatterns\PatternTypes\SliderPatternTypes.h">
+      <Filter>MemoryPatterns\PatternTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryPatterns\Windows\SliderPatternsWindows.h">
+      <Filter>MemoryPatterns\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="GameClient\Panorama\Slider.h">
+      <Filter>GameClient\Panorama</Filter>
+    </ClInclude>
+    <ClInclude Include="CS2\Panorama\CTextEntry.h">
+      <Filter>CS2\Panorama</Filter>
+    </ClInclude>
+    <ClInclude Include="GameClient\Panorama\TextEntry.h">
+      <Filter>GameClient\Panorama</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryPatterns\PatternTypes\TextEntryPatternTypes.h">
+      <Filter>MemoryPatterns\PatternTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryPatterns\Windows\TextEntryPatternsWindows.h">
+      <Filter>MemoryPatterns\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\IdentityMacro.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="CS2\Panorama\CUI_3dPanel.h">
+      <Filter>CS2\Panorama</Filter>
+    </ClInclude>
+    <ClInclude Include="CS2\Classes\CCS_PortraitWorld.h">
+      <Filter>CS2\Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryPatterns\Windows\Ui3dPanelPatternsWindows.h">
+      <Filter>MemoryPatterns\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="GameClient\PortraitWorld.h">
+      <Filter>GameClient</Filter>
+    </ClInclude>
+    <ClInclude Include="CS2\Panorama\CUI_Item3dPanel.h">
+      <Filter>CS2\Panorama</Filter>
+    </ClInclude>
+    <ClInclude Include="GameClient\EntitySystem\EntityHandle.h">
+      <Filter>GameClient\EntitySystem</Filter>
+    </ClInclude>
+    <ClInclude Include="GameClient\Panorama\UiItem3dPanel.h">
+      <Filter>GameClient\Panorama</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryPatterns\PatternTypes\PanoramaDropDownPatternTypes.h">
+      <Filter>MemoryPatterns\PatternTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryPatterns\PatternTypes\PortraitWorldPatternTypes.h">
+      <Filter>MemoryPatterns\PatternTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryPatterns\PatternTypes\Ui3dPanelPatternTypes.h">
+      <Filter>MemoryPatterns\PatternTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryPatterns\PatternTypes\UiItem3dPanelPatternTypes.h">
+      <Filter>MemoryPatterns\PatternTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryPatterns\Windows\UiItem3dPanelPatternsWindows.h">
+      <Filter>MemoryPatterns\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryPatterns\AllMemoryPatternSearchResults.h">
+      <Filter>MemoryPatterns</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryPatterns\PatternTypes\GlobalVarsPatternTypes.h">
+      <Filter>MemoryPatterns\PatternTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryPatterns\Windows\GlobalVarsPatternsWindows.h">
+      <Filter>MemoryPatterns\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="GameClient\ConVars\CvarSystem.h">
+      <Filter>GameClient\ConVars</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\Panorama\Tabs\VisualsTab\HueSlider.h">
+      <Filter>UI\Panorama\Tabs\VisualsTab</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\Panorama\Tabs\VisualsTab\IntSlider.h">
+      <Filter>UI\Panorama\Tabs\VisualsTab</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\Panorama\Tabs\VisualsTab\ViewmodelModPreviewPanel.h">
+      <Filter>UI\Panorama\Tabs\VisualsTab</Filter>
+    </ClInclude>
+    <ClInclude Include="Hooks\ClientModeHooks.h">
+      <Filter>Hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="HookContext\HookContextMacros.h">
+      <Filter>HookContext</Filter>
+    </ClInclude>
+    <ClInclude Include="GameClient\ConVars\ConVarTypes.h">
+      <Filter>GameClient\ConVars</Filter>
+    </ClInclude>
+    <ClInclude Include="Config\RangeConstrainedVariableParams.h">
+      <Filter>Config</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Visuals\ViewmodelMod\ViewmodelMod.h">
+      <Filter>Features\Visuals\ViewmodelMod</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Visuals\ViewmodelMod\ViewmodelModConfigVariables.h">
+      <Filter>Features\Visuals\ViewmodelMod</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Visuals\ViewmodelMod\ViewmodelModParams.h">
+      <Filter>Features\Visuals\ViewmodelMod</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\Panorama\Tabs\VisualsTab\ViewmodelModPreviewPanelState.h">
+      <Filter>UI\Panorama\Tabs\VisualsTab</Filter>
+    </ClInclude>
+    <ClInclude Include="CS2\Constants\CrosshairColorIndex.h">
+      <Filter>CS2\Constants</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Combat\SniperRifles\NoScopeInaccuracyVis\NoScopeInaccuracyVis.h">
+      <Filter>Features\Combat\SniperRifles\NoScopeInaccuracyVis</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Combat\SniperRifles\NoScopeInaccuracyVis\NoScopeInaccuracyVisConfigVariables.h">
+      <Filter>Features\Combat\SniperRifles\NoScopeInaccuracyVis</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Combat\SniperRifles\NoScopeInaccuracyVis\NoScopeInaccuracyVisParams.h">
+      <Filter>Features\Combat\SniperRifles\NoScopeInaccuracyVis</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Combat\SniperRifles\NoScopeInaccuracyVis\NoScopeInaccuracyVisState.h">
+      <Filter>Features\Combat\SniperRifles\NoScopeInaccuracyVis</Filter>
+    </ClInclude>
+    <ClInclude Include="GameClient\Crosshair.h">
+      <Filter>GameClient</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\Panorama\CombatTab.h">
+      <Filter>UI\Panorama</Filter>
+    </ClInclude>
+    <ClInclude Include="CS2\Econ\ItemDefinitionIndex.h">
+      <Filter>CS2\Econ</Filter>
+    </ClInclude>
+    <ClInclude Include="CS2\Econ\ItemId.h">
+      <Filter>CS2\Econ</Filter>
+    </ClInclude>
+    <ClInclude Include="CS2\Econ\PaintKitIndex.h">
+      <Filter>CS2\Econ</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\ToUnderlying.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="GameClient\Econ\FauxItemId.h">
+      <Filter>GameClient\Econ</Filter>
+    </ClInclude>
+    <ClInclude Include="CS2\Classes\Entities\C_CSPlayerResource.h">
+      <Filter>CS2\Classes\Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="CS2\Constants\BombsiteIndex.h">
+      <Filter>CS2\Constants</Filter>
+    </ClInclude>
+    <ClInclude Include="GameClient\Entities\PlayerResource.h">
+      <Filter>GameClient\Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryPatterns\PatternTypes\PlayerResourcePatternTypes.h">
+      <Filter>MemoryPatterns\PatternTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryPatterns\Windows\PlayerResourcePatternsWindows.h">
+      <Filter>MemoryPatterns\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="CS2\Constants\RoundWinStatus.h">
+      <Filter>CS2\Constants</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\BombPlantAlert\BombPlantAlert.h">
+      <Filter>Features\Hud\BombPlantAlert</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\BombPlantAlert\BombPlantAlertConfigVariables.h">
+      <Filter>Features\Hud\BombPlantAlert</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\BombPlantAlert\BombPlantAlertPanelFactory.h">
+      <Filter>Features\Hud\BombPlantAlert</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\BombPlantAlert\BombPlantAlertPanelParams.h">
+      <Filter>Features\Hud\BombPlantAlert</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\BombPlantAlert\BombPlantAlertParams.h">
+      <Filter>Features\Hud\BombPlantAlert</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\BombPlantAlert\BombPlantAlertState.h">
+      <Filter>Features\Hud\BombPlantAlert</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Visuals\ModelGlow\ModelGlowDeactivationFlags.h">
+      <Filter>Features\Visuals\ModelGlow</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\EnumFlags.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="GameClient\Panorama\ImagePanel.h">
+      <Filter>GameClient\Panorama</Filter>
+    </ClInclude>
+    <ClInclude Include="CS2\Classes\CUtlAbstractDelegate.h">
+      <Filter>CS2\Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="EntryPoints\GuiEntryPoints.h">
+      <Filter>EntryPoints</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\TemplateParameterCstring.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="EntryPoints\EntryPoints.h">
+      <Filter>EntryPoints</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\Panorama\OnOffDropdownSelectionChangeHandler.h">
+      <Filter>UI\Panorama</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\Panorama\Tabs\VisualsTab\PlayerInfoInWorldDropdownSelectionChangeHandler.h">
+      <Filter>UI\Panorama\Tabs\VisualsTab</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\Panorama\Tabs\VisualsTab\PlayerInfoInWorldPlayerHealthColorModeDropdownSelectionChangeHandler.h">
+      <Filter>UI\Panorama\Tabs\VisualsTab</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\Panorama\Tabs\VisualsTab\PlayerInfoInWorldPlayerPositionArrowColorModeDropdownSelectionChangeHandler.h">
+      <Filter>UI\Panorama\Tabs\VisualsTab</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\Panorama\Tabs\VisualsTab\PlayerModelGlowColorModeDropdownSelectionChangeHandler.h">
+      <Filter>UI\Panorama\Tabs\VisualsTab</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\Panorama\Tabs\VisualsTab\PlayerModelGlowDropdownSelectionChangeHandler.h">
+      <Filter>UI\Panorama\Tabs\VisualsTab</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\Panorama\Tabs\VisualsTab\PlayerOutlineGlowColorModeDropdownSelectionChangeHandler.h">
+      <Filter>UI\Panorama\Tabs\VisualsTab</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\Panorama\Tabs\VisualsTab\PlayerOutlineGlowDropdownSelectionChangeHandler.h">
+      <Filter>UI\Panorama\Tabs\VisualsTab</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="UI\Panorama\CreateGUI.js">
@@ -1816,12 +1977,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="Intrinsics.cpp" />
+    <ClCompile Include="Platform\Windows\CRTWindows.cpp">
+      <Filter>Platform\Windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <MASM Include="Platform\Windows\Syscalls\WindowsSyscall.asm">
       <Filter>Platform\Windows\Syscalls</Filter>
     </MASM>
-    <MASM Include="WindowsEndpoints.asm" />
   </ItemGroup>
 </Project>

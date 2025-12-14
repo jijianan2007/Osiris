@@ -66,4 +66,14 @@ enum ETextAlign : std::int8_t {
     k_ETextAlignJustifyLetterSpacing = 4
 };
 
+enum EStrokeType : std::uint32_t {
+    k_EStrokeTypeFillColor,
+    k_EStrokeTypeLinearGradient,
+    k_EStrokeTypeRadialGradient
+};
+
+enum EBorderStyle : std::int8_t {
+    k_EBorderStyleSolid = 1
+};
+
 }
